@@ -1,0 +1,6 @@
+apiVersion: v2
+name: renewableops
+description: RenewableOps AI application plane
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

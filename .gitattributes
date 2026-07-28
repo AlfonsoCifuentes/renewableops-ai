@@ -1,0 +1,8 @@
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.ipynb text eol=lf
+*.json text eol=lf
+*.joblib binary
+*.png binary
+*.parquet binary
+*.webm binary

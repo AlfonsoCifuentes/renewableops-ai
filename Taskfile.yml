@@ -1,0 +1,20 @@
+version: "3"
+
+tasks:
+  bootstrap:
+    cmds: [uv sync --extra dev --extra platform, npm install]
+  seed:
+    env:
+      RENEWABLEOPS_ENABLE_MLFLOW: "true"
+      MLFLOW_TRACKING_URI: sqlite:///data/mlflow.db
+    cmds: [uv run renewableops run-demo --days 90]
+  api:
+    cmds: [uv run uvicorn renewableops_api.main:app --reload --port 8000]
+  dashboard:
+    cmds: [npm run dev]
+  lint:
+    cmds: [uv run ruff check ., npm run lint]
+  test:
+    cmds: [uv run pytest, npm run typecheck, npm run test:ui]
+  verify:
+    cmds: [uv run python scripts/verify_environment.py, docker compose config --quiet]

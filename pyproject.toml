@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "renewableops-ai"
+version = "1.0.0"
+description = "Reproducible renewable operations, forecasting and MLOps platform."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Alfonso Cifuentes" }]
+dependencies = [
+  "fastapi>=0.115",
+  "httpx>=0.28",
+  "joblib>=1.4",
+  "numpy>=2.0",
+  "orjson>=3.10",
+  "pandas>=2.2",
+  "prometheus-client>=0.21",
+  "pyarrow>=18",
+  "pydantic>=2.10",
+  "pydantic-settings>=2.7",
+  "python-multipart>=0.0.20",
+  "pyyaml>=6.0",
+  "scikit-image>=0.25",
+  "scikit-learn>=1.6",
+  "structlog>=24.4",
+  "tenacity>=9.0",
+  "uvicorn[standard]>=0.34"
+]
+
+[project.optional-dependencies]
+platform = [
+  "boto3>=1.40",
+  "duckdb>=1.2",
+  "mlflow>=3.0",
+  "pandera>=0.22",
+  "psycopg[binary]>=3.2",
+  "pyspark>=4.0",
+  "sqlalchemy>=2.0"
+]
+dev = [
+  "coverage[toml]>=7.6",
+  "jsonschema>=4.23",
+  "mypy>=1.14",
+  "pip-audit>=2.7",
+  "pytest>=8.3",
+  "pytest-asyncio>=0.25",
+  "pytest-cov>=6.0",
+  "ruff>=0.9"
+]
+
+[project.scripts]
+renewableops = "renewableops.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["packages/core/src", "apps/api/src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "apps/api/tests"]
+addopts = "-q --strict-markers"
+markers = [
+  "integration: tests requiring generated artifacts",
+  "slow: long-running model or platform checks"
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["notebooks", "databricks/notebooks"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+"apps/api/src/renewableops_api/main.py" = ["B008"]
+"databricks/src/**/*.py" = ["F821"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+warn_unused_ignores = true
+
+[tool.coverage.run]
+source = ["renewableops", "renewableops_api"]

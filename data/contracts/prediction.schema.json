@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://renewableops.local/contracts/prediction/1.0.0",
+  "title": "GenerationPrediction",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["timestamp_utc", "asset_id", "horizon_hours", "p10_mw", "p50_mw", "p90_mw", "model_version"],
+  "properties": {
+    "timestamp_utc": {"type": "string", "format": "date-time"},
+    "asset_id": {"type": "string", "minLength": 1},
+    "horizon_hours": {"type": "integer", "minimum": 1, "maximum": 168},
+    "p10_mw": {"type": "number", "minimum": 0},
+    "p50_mw": {"type": "number", "minimum": 0},
+    "p90_mw": {"type": "number", "minimum": 0},
+    "model_version": {"type": "string"},
+    "is_synthetic": {"type": "boolean"}
+  },
+  "allOf": [
+    {"description": "Application validation also enforces p10_mw <= p50_mw <= p90_mw."}
+  ]
+}

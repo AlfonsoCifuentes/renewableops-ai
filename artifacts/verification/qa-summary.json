@@ -1,0 +1,76 @@
+{
+  "generated_at": "2026-07-28T20:56:00Z",
+  "release": "1.0.0",
+  "status": "passed_with_external_gate",
+  "quality": {
+    "python": {
+      "status": "passed",
+      "tests": 26,
+      "warnings": 1,
+      "warning_scope": "Starlette dependency deprecation"
+    },
+    "typing": {
+      "status": "passed",
+      "checked_source_files": 20
+    },
+    "frontend_components": {
+      "status": "passed",
+      "tests": 3
+    },
+    "browser_e2e": {
+      "status": "passed",
+      "tests": 8,
+      "projects": [
+        "desktop",
+        "mobile"
+      ]
+    },
+    "accessibility": {
+      "status": "passed",
+      "axe_version": "4.12.1",
+      "desktop_violations": 0,
+      "mobile_violations": 0
+    },
+    "browser_console": {
+      "status": "passed",
+      "desktop_errors": 0,
+      "mobile_errors": 0
+    },
+    "production_build": {
+      "status": "passed",
+      "framework": "Next.js 16.2.12"
+    },
+    "security": {
+      "status": "passed_with_documented_exceptions",
+      "python_known_vulnerabilities": 0,
+      "npm_critical_vulnerabilities": 0,
+      "npm_high_findings": 12,
+      "exception_register": "governance/security-exceptions.md"
+    }
+  },
+  "runtime": {
+    "status": "passed",
+    "services": 9,
+    "evidence": "artifacts/verification/container-runtime.json"
+  },
+  "platform": {
+    "status": "passed",
+    "evidence": "artifacts/verification/platform-validation.json"
+  },
+  "demo": {
+    "status": "passed",
+    "duration_seconds": 244.5,
+    "bytes": 3164842,
+    "artifact": "artifacts/demo/renewableops-guided-demo.webm"
+  },
+  "external_gate": {
+    "system": "Databricks",
+    "scope": [
+      "Lakeflow remote run",
+      "Jobs remote run",
+      "AI/BI dashboard publication"
+    ],
+    "reason": "An owner workspace and OAuth authorization are required.",
+    "evidence": "docs/issues/remote-databricks-validation.md"
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "id": "renewableops-daily",
+  "name": "Daily Renewable Operations",
+  "nodes": [
+    {
+      "parameters": { "rule": { "interval": [{ "field": "cronExpression", "expression": "0 6 * * *" }] } },
+      "id": "daily-schedule",
+      "name": "06:00 Europe Madrid",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-760, -120]
+    },
+    {
+      "parameters": {},
+      "id": "daily-manual",
+      "name": "Manual demo",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-760, 80]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "run", "name": "workflow_run_id", "type": "string", "value": "={{ $execution.id }}" },
+            { "id": "corr", "name": "correlation_id", "type": "string", "value": "={{ $execution.id + '-' + $now.toMillis() }}" },
+            { "id": "attempt", "name": "attempt", "type": "number", "value": 1 },
+            { "id": "started", "name": "started_at", "type": "string", "value": "={{ $now.toUTC().toISO() }}" }
+          ]
+        }
+      },
+      "id": "daily-context",
+      "name": "Generate run context",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-520, -20]
+    },
+    {
+      "parameters": {
+        "url": "http://api:8000/health/ready",
+        "options": { "timeout": 15000, "response": { "response": { "neverError": true } } }
+      },
+      "id": "daily-ready",
+      "name": "Check platform readiness",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-290, -20],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000
+    },
+    {
+      "parameters": {
+        "url": "http://api:8000/api/v1/overview",
+        "options": {
+          "timeout": 30000,
+          "response": { "response": { "neverError": true } }
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Correlation-ID", "value": "={{ $('Generate run context').item.json.correlation_id }}" }
+          ]
+        }
+      },
+      "id": "daily-overview",
+      "name": "Validate published snapshot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-40, -20],
+      "retryOnFail": true,
+      "maxTries": 2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "valid",
+              "leftValue": "={{ $json.meta.data_status }}",
+              "rightValue": "valid",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "daily-gate",
+      "name": "Snapshot quality gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [200, -20]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "status", "name": "status", "type": "string", "value": "success" },
+            { "id": "action", "name": "action", "type": "string", "value": "snapshot retained and audit event recorded" }
+          ]
+        }
+      },
+      "id": "daily-success",
+      "name": "Record success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [450, -100]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "id": "status", "name": "status", "type": "string", "value": "failed_quality_gate" },
+            { "id": "action", "name": "action", "type": "string", "value": "retain last valid snapshot and open incident" }
+          ]
+        }
+      },
+      "id": "daily-failure",
+      "name": "Create data incident",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [450, 80]
+    }
+  ],
+  "connections": {
+    "06:00 Europe Madrid": { "main": [[{ "node": "Generate run context", "type": "main", "index": 0 }]] },
+    "Manual demo": { "main": [[{ "node": "Generate run context", "type": "main", "index": 0 }]] },
+    "Generate run context": { "main": [[{ "node": "Check platform readiness", "type": "main", "index": 0 }]] },
+    "Check platform readiness": { "main": [[{ "node": "Validate published snapshot", "type": "main", "index": 0 }]] },
+    "Validate published snapshot": { "main": [[{ "node": "Snapshot quality gate", "type": "main", "index": 0 }]] },
+    "Snapshot quality gate": {
+      "main": [
+        [{ "node": "Record success", "type": "main", "index": 0 }],
+        [{ "node": "Create data incident", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": { "executionOrder": "v1", "timezone": "Europe/Madrid", "saveDataErrorExecution": "all", "saveDataSuccessExecution": "none" },
+  "versionId": "30fbad29-bf20-4e9b-9e64-9bf00c97d9b1"
+}

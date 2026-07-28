@@ -1,0 +1,205 @@
+sources:
+  - source_id: ree_redata
+    name: REData API
+    authority: Red Eléctrica
+    base_url: https://apidatos.ree.es
+    documentation_url: https://www.ree.es/es/datos/apidatos
+    authentication: none
+    secret_name: null
+    license_notes: Review official reuse terms before redistribution
+    attribution: Red Eléctrica de España
+    data_classification: public
+    expected_frequency: hourly
+    expected_latency: P1D
+    schema_version: "1.0"
+    owner: data_engineering
+    enabled: true
+    fallback_source: demo_fixture
+    last_reviewed_at: "2026-07-28"
+  - source_id: pvgis
+    name: PVGIS API
+    authority: European Commission Joint Research Centre
+    base_url: https://re.jrc.ec.europa.eu/api
+    documentation_url: https://joint-research-centre.ec.europa.eu/pvgis-online-tool_en
+    authentication: none
+    secret_name: null
+    license_notes: Cite PVGIS and JRC; review dataset-specific notices
+    attribution: European Commission, Joint Research Centre
+    data_classification: public
+    expected_frequency: climatology
+    expected_latency: P1Y
+    schema_version: "5.3"
+    owner: data_engineering
+    enabled: true
+    fallback_source: demo_fixture
+    last_reviewed_at: "2026-07-28"
+  - source_id: aemet
+    name: AEMET OpenData
+    authority: Agencia Estatal de Meteorología
+    base_url: https://opendata.aemet.es/opendata/api
+    documentation_url: https://opendata.aemet.es/dist/
+    authentication: api_key
+    secret_name: AEMET_API_KEY
+    license_notes: Attribution required under AEMET OpenData terms
+    attribution: AEMET
+    data_classification: public
+    expected_frequency: hourly
+    expected_latency: PT3H
+    schema_version: "1.0"
+    owner: data_engineering
+    enabled: true
+    fallback_source: synthetic_weather
+    last_reviewed_at: "2026-07-28"
+  - source_id: esios
+    name: e·sios API
+    authority: Red Eléctrica
+    base_url: https://api.esios.ree.es
+    documentation_url: https://api.esios.ree.es/
+    authentication: bearer_token
+    secret_name: ESIOS_API_KEY
+    license_notes: Review indicator-specific reuse conditions
+    attribution: Red Eléctrica de España
+    data_classification: public
+    expected_frequency: hourly
+    expected_latency: PT2H
+    schema_version: "1.0"
+    owner: data_engineering
+    enabled: false
+    fallback_source: synthetic_market
+    last_reviewed_at: "2026-07-28"
+  - source_id: era5
+    name: ERA5
+    authority: Copernicus Climate Change Service
+    base_url: https://cds.climate.copernicus.eu/api
+    documentation_url: https://cds.climate.copernicus.eu/
+    authentication: oauth
+    secret_name: COPERNICUS_CLIENT_SECRET
+    license_notes: Cite Copernicus and the selected dataset
+    attribution: Copernicus Climate Change Service
+    data_classification: public
+    expected_frequency: hourly
+    expected_latency: P5D
+    schema_version: "1.0"
+    owner: data_engineering
+    enabled: false
+    fallback_source: synthetic_weather
+    last_reviewed_at: "2026-07-28"
+  - source_id: entsoe
+    name: ENTSO-E Transparency Platform
+    authority: ENTSO-E
+    base_url: https://web-api.tp.entsoe.eu
+    documentation_url: https://transparency.entsoe.eu/content/static_content/Static%20content/web%20api/Guide.html
+    authentication: security_token
+    secret_name: ENTSOE_SECURITY_TOKEN
+    license_notes: Review ENTSO-E data terms before redistribution
+    attribution: ENTSO-E
+    data_classification: public
+    expected_frequency: hourly
+    expected_latency: PT2H
+    schema_version: "1.0"
+    owner: data_engineering
+    enabled: false
+    fallback_source: ree_redata
+    last_reviewed_at: "2026-07-28"
+  - source_id: installations_open_data
+    name: Spanish renewable installation open data
+    authority: MITECO and regional open data portals
+    base_url: https://datos.gob.es/
+    documentation_url: https://datos.gob.es/
+    authentication: none
+    secret_name: null
+    license_notes: Dataset-specific open data license
+    attribution: Dataset publisher
+    data_classification: public
+    expected_frequency: monthly
+    expected_latency: P30D
+    schema_version: "catalog"
+    owner: geospatial
+    enabled: false
+    fallback_source: fictitious_asset_catalog
+    last_reviewed_at: "2026-07-28"
+  - source_id: sentinel
+    name: Copernicus Data Space Sentinel
+    authority: European Union Copernicus programme
+    base_url: https://dataspace.copernicus.eu/
+    documentation_url: https://documentation.dataspace.copernicus.eu/
+    authentication: oauth
+    secret_name: COPERNICUS_CLIENT_SECRET
+    license_notes: Copernicus data terms and attribution apply
+    attribution: European Union, Copernicus programme
+    data_classification: public
+    expected_frequency: multi_day
+    expected_latency: P2D
+    schema_version: "odata"
+    owner: computer_vision
+    enabled: false
+    fallback_source: synthetic_inspection
+    last_reviewed_at: "2026-07-28"
+  - source_id: elpv
+    name: ELPV photovoltaic electroluminescence dataset
+    authority: Dataset authors
+    base_url: https://github.com/zae-bayern/elpv-dataset
+    documentation_url: https://github.com/zae-bayern/elpv-dataset
+    authentication: none
+    secret_name: null
+    license_notes: Verify repository license and cite the paper
+    attribution: ELPV dataset authors
+    data_classification: public_research
+    expected_frequency: static
+    expected_latency: none
+    schema_version: "repository"
+    owner: computer_vision
+    enabled: false
+    fallback_source: synthetic_inspection
+    last_reviewed_at: "2026-07-28"
+  - source_id: pv_ir_zenodo
+    name: Photovoltaic infrared dataset
+    authority: Zenodo record authors
+    base_url: https://zenodo.org/
+    documentation_url: https://zenodo.org/
+    authentication: none
+    secret_name: null
+    license_notes: Resolve and record the exact Zenodo record/version before use
+    attribution: Record authors and Zenodo DOI
+    data_classification: public_research
+    expected_frequency: static
+    expected_latency: none
+    schema_version: "doi-pinned"
+    owner: computer_vision
+    enabled: false
+    fallback_source: synthetic_inspection
+    last_reviewed_at: "2026-07-28"
+  - source_id: wind_blade_defects
+    name: Wind turbine blade defect research datasets
+    authority: Dataset-specific authors
+    base_url: https://zenodo.org/
+    documentation_url: https://zenodo.org/
+    authentication: none
+    secret_name: null
+    license_notes: Dataset-specific license and citation required
+    attribution: Dataset authors
+    data_classification: public_research
+    expected_frequency: static
+    expected_latency: none
+    schema_version: "doi-pinned"
+    owner: computer_vision
+    enabled: false
+    fallback_source: synthetic_inspection
+    last_reviewed_at: "2026-07-28"
+  - source_id: wtbs2025
+    name: WTBs2025 benchmark
+    authority: Benchmark authors
+    base_url: https://zenodo.org/
+    documentation_url: https://zenodo.org/
+    authentication: none
+    secret_name: null
+    license_notes: Pin release and verify benchmark terms
+    attribution: WTBs2025 authors
+    data_classification: public_research
+    expected_frequency: static
+    expected_latency: none
+    schema_version: "2025"
+    owner: computer_vision
+    enabled: false
+    fallback_source: synthetic_inspection
+    last_reviewed_at: "2026-07-28"

@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: uv sync --extra dev --extra platform --locked
+      - run: npm ci
+      - run: uv run renewableops run-demo --days 90
+        env:
+          RENEWABLEOPS_ENABLE_MLFLOW: "true"
+          MLFLOW_TRACKING_URI: sqlite:///data/mlflow.db
+      - run: uv run ruff check .
+      - run: uv run mypy packages/core/src apps/api/src
+      - run: uv run pytest --junitxml=artifacts/pytest.xml
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:ui
+      - run: npm run build
+      - run: docker compose config --quiet
+      - run: uv run python scripts/validate_n8n_workflows.py
+      - run: uv run python scripts/verify_environment.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verification
+          path: artifacts/
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: uv sync --extra dev --locked
+      - run: npm ci
+      - run: uv run pip-audit
+      - run: npm audit --audit-level=critical
+
+  spark-reconciliation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --extra dev --extra platform --locked
+      - run: uv run pytest tests/integration/test_pandas_spark_reconciliation.py

@@ -1,0 +1,18 @@
+resources:
+  jobs:
+    snapshot_export_job:
+      name: renewableops_snapshot_export_${bundle.target}
+      max_concurrent_runs: 1
+      tasks:
+        - task_key: export_sanitized_gold
+          notebook_task:
+            notebook_path: ../src/renewableops_databricks/export_snapshot.py
+            source: WORKSPACE
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+          environment_key: default
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "4"

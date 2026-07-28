@@ -1,0 +1,43 @@
+resources:
+  jobs:
+    daily_renewableops_job:
+      name: daily_renewableops_${bundle.target}
+      max_concurrent_runs: 1
+      queue:
+        enabled: true
+      schedule:
+        quartz_cron_expression: "0 0 6 * * ?"
+        timezone_id: Europe/Madrid
+        pause_status: PAUSED
+      tasks:
+        - task_key: refresh_lakeflow
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.renewableops_lakeflow.id}
+            full_refresh: false
+        - task_key: train_and_register
+          depends_on:
+            - task_key: refresh_lakeflow
+          notebook_task:
+            notebook_path: ../src/renewableops_databricks/train_register.py
+            source: WORKSPACE
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+          environment_key: default
+        - task_key: export_snapshot
+          depends_on:
+            - task_key: train_and_register
+          notebook_task:
+            notebook_path: ../src/renewableops_databricks/export_snapshot.py
+            source: WORKSPACE
+            base_parameters:
+              catalog: ${var.catalog}
+              schema: ${var.schema}
+          environment_key: default
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "4"
+            dependencies:
+              - scikit-learn>=1.6
+              - mlflow>=3.0

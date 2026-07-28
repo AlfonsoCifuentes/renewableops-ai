@@ -1,0 +1,83 @@
+{
+  "id": "renewableops-weekly-model-review",
+  "name": "Weekly Model Review",
+  "nodes": [
+    {
+      "parameters": { "rule": { "interval": [{ "field": "cronExpression", "expression": "0 7 * * 1" }] } },
+      "id": "weekly-trigger",
+      "name": "Monday 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [-520, 0]
+    },
+    {
+      "parameters": {
+        "url": "http://api:8000/api/v1/models",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "X-Correlation-ID", "value": "={{ 'weekly-' + $execution.id }}" }] },
+        "options": { "timeout": 30000 }
+      },
+      "id": "weekly-models",
+      "name": "Read registry and metrics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-280, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "typeValidation": "strict" },
+          "conditions": [{
+            "id": "drift-gate",
+            "leftValue": "={{ $json.champions.some(m => m.drift_status !== 'stable') }}",
+            "rightValue": true,
+            "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+          }],
+          "combinator": "and"
+        }
+      },
+      "id": "weekly-gate",
+      "name": "Retraining gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-40, 0]
+    },
+    {
+      "parameters": { "assignments": { "assignments": [
+        { "id": "action", "name": "action", "type": "string", "value": "launch_challenger_training" },
+        { "id": "approval", "name": "approval_required", "type": "boolean", "value": true },
+        { "id": "promotion", "name": "auto_promote", "type": "boolean", "value": false }
+      ] } },
+      "id": "weekly-train",
+      "name": "Request challenger",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [210, -90]
+    },
+    {
+      "parameters": { "assignments": { "assignments": [
+        { "id": "action", "name": "action", "type": "string", "value": "publish_no_change_report" },
+        { "id": "promotion", "name": "auto_promote", "type": "boolean", "value": false }
+      ] } },
+      "id": "weekly-report",
+      "name": "Publish stable report",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [210, 90]
+    }
+  ],
+  "connections": {
+    "Monday 07:00": { "main": [[{ "node": "Read registry and metrics", "type": "main", "index": 0 }]] },
+    "Read registry and metrics": { "main": [[{ "node": "Retraining gate", "type": "main", "index": 0 }]] },
+    "Retraining gate": {
+      "main": [
+        [{ "node": "Request challenger", "type": "main", "index": 0 }],
+        [{ "node": "Publish stable report", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": { "executionOrder": "v1", "timezone": "Europe/Madrid" },
+  "versionId": "60e9b8fc-7cb2-4510-bced-d08eb1b0d5c7"
+}

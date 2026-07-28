@@ -1,0 +1,43 @@
+bundle:
+  name: renewableops-ai
+  databricks_cli_version: ">= 1.9.0"
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: Unity Catalog catalog for RenewableOps
+    default: renewableops
+  schema:
+    description: Target schema for the active bundle target
+    default: dev
+  warehouse_id:
+    description: SQL warehouse id used by the AI/BI dashboard
+    lookup:
+      warehouse: "Serverless Starter Warehouse"
+
+sync:
+  include:
+    - src/**
+    - sql/**
+  exclude:
+    - src/*.lvdash.json
+
+targets:
+  dev:
+    default: true
+    mode: development
+    variables:
+      schema: dev
+    workspace:
+      profile: renewableops-free
+  prod:
+    mode: production
+    variables:
+      schema: prod
+    workspace:
+      profile: renewableops-free
+    permissions:
+      - level: CAN_VIEW
+        group_name: users

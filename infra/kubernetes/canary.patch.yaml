@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: renewableops-api-canary
+  namespace: renewableops-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: renewableops-api
+      app.kubernetes.io/track: canary
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: renewableops-api
+        app.kubernetes.io/track: canary
+    spec:
+      containers:
+        - name: api
+          image: renewableops-api:canary

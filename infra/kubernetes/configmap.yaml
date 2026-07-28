@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: renewableops-config
+  namespace: renewableops-app
+data:
+  APP_ENV: "kubernetes"
+  APP_TIMEZONE: "Europe/Madrid"
+  PUBLIC_DEMO: "true"
+  LOG_LEVEL: "INFO"
+  NEXT_PUBLIC_API_URL: "/api"

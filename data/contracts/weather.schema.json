@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://renewableops.local/contracts/weather/1.0.0",
+  "title": "WeatherObservation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["timestamp_utc", "station_id", "temperature_c", "wind_speed_ms", "source_id"],
+  "properties": {
+    "timestamp_utc": {"type": "string", "format": "date-time"},
+    "station_id": {"type": "string", "minLength": 1},
+    "temperature_c": {"type": "number", "minimum": -60, "maximum": 70},
+    "wind_speed_ms": {"type": "number", "minimum": 0, "maximum": 100},
+    "irradiance_wm2": {"type": "number", "minimum": 0, "maximum": 1600},
+    "cloud_cover_fraction": {"type": "number", "minimum": 0, "maximum": 1},
+    "source_id": {"type": "string"},
+    "is_synthetic": {"type": "boolean"}
+  }
+}

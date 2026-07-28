@@ -1,0 +1,62 @@
+{
+  "registry_version": "1.0.0",
+  "generated_at": "2026-07-28T20:10:54.620557+00:00",
+  "dataset_manifest": "data/manifests/generation_silver.json",
+  "aliases": {
+    "solar": {
+      "model_name": "solar_forecast",
+      "aliases": {
+        "Champion": "extra_trees",
+        "Challenger": "hist_gradient_boosting"
+      },
+      "champion_metrics": {
+        "technology": "solar",
+        "model": "extra_trees",
+        "mae_mw": 1.0188,
+        "rmse_mw": 1.8657,
+        "nmae": 0.01954,
+        "bias_mw": 0.0895,
+        "skill_vs_persistence": 0.6097,
+        "coverage_p10_p90": 0.6997,
+        "dataset_rows": 10680,
+        "test_rows": 1685
+      },
+      "gates": {
+        "positive_skill_vs_persistence": true,
+        "nmae_below_10_percent": true,
+        "interval_coverage_recorded": true,
+        "manual_approval_required": true
+      },
+      "promotion_status": "approved_for_demo",
+      "rollback_alias": "Champion"
+    },
+    "wind": {
+      "model_name": "wind_forecast",
+      "aliases": {
+        "Champion": "extra_trees",
+        "Challenger": "hist_gradient_boosting"
+      },
+      "champion_metrics": {
+        "technology": "wind",
+        "model": "extra_trees",
+        "mae_mw": 2.8901,
+        "rmse_mw": 4.6038,
+        "nmae": 0.04061,
+        "bias_mw": 0.2176,
+        "skill_vs_persistence": 0.8317,
+        "coverage_p10_p90": 0.6938,
+        "dataset_rows": 10680,
+        "test_rows": 1685
+      },
+      "gates": {
+        "positive_skill_vs_persistence": true,
+        "nmae_below_10_percent": true,
+        "interval_coverage_recorded": true,
+        "manual_approval_required": true
+      },
+      "promotion_status": "approved_for_demo",
+      "rollback_alias": "Champion"
+    }
+  },
+  "automatic_production_promotion": false
+}

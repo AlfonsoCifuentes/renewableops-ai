@@ -1,0 +1,52 @@
+{
+  "id": "renewableops-incident-response",
+  "name": "Incident Response",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "renewableops/incidents",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "incident-webhook",
+      "name": "Signed incident webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-420, 0],
+      "webhookId": "91d367af-b34d-4b11-aa97-b62a9a94eb80"
+    },
+    {
+      "parameters": { "assignments": { "assignments": [
+        { "id": "incident", "name": "incident_id", "type": "string", "value": "={{ 'INC-' + $execution.id }}" },
+        { "id": "corr", "name": "correlation_id", "type": "string", "value": "={{ $json.headers['x-correlation-id'] || $execution.id }}" },
+        { "id": "status", "name": "status", "type": "string", "value": "accepted_for_human_review" }
+      ] } },
+      "id": "incident-context",
+      "name": "Deduplicate and classify",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-150, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { incident_id: $json.incident_id, status: $json.status, correlation_id: $json.correlation_id } }}",
+        "options": { "responseCode": 202 }
+      },
+      "id": "incident-response",
+      "name": "Acknowledge",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [100, 0]
+    }
+  ],
+  "connections": {
+    "Signed incident webhook": { "main": [[{ "node": "Deduplicate and classify", "type": "main", "index": 0 }]] },
+    "Deduplicate and classify": { "main": [[{ "node": "Acknowledge", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": { "executionOrder": "v1", "timezone": "Europe/Madrid" },
+  "versionId": "c427cb7f-436a-4539-8c4c-bec3ab1bf5f0"
+}

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: renewableops-app
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: renewableops-data
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: renewableops-ml
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: renewableops-observability

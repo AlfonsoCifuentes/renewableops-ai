@@ -1,0 +1,8 @@
+{
+  "model": "HOG + LBP + calibrated logistic regression",
+  "accuracy": 1.0,
+  "macro_f1": 1.0,
+  "train_images": 170,
+  "test_images": 50,
+  "data_origin": "synthetic texture benchmark"
+}

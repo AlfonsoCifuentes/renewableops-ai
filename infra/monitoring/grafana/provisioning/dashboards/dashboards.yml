@@ -1,0 +1,9 @@
+apiVersion: 1
+providers:
+  - name: RenewableOps
+    orgId: 1
+    folder: RenewableOps AI
+    type: file
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards

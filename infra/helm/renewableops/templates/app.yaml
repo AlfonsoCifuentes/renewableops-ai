@@ -1,0 +1,46 @@
+{{- range $name, $port := dict "api" 8000 "dashboard" 3000 }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: renewableops-{{ $name }}
+  labels:
+    app.kubernetes.io/name: renewableops-{{ $name }}
+spec:
+  replicas: {{ $.Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: renewableops-{{ $name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: renewableops-{{ $name }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: {{ $name }}
+          image: "{{ index $.Values.image $name "repository" }}:{{ index $.Values.image $name "tag" }}"
+          ports:
+            - name: http
+              containerPort: {{ $port }}
+          resources:
+{{ toYaml (index $.Values.resources $name) | indent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"] }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: renewableops-{{ $name }}
+spec:
+  selector:
+    app.kubernetes.io/name: renewableops-{{ $name }}
+  ports:
+    - name: http
+      port: {{ $port }}
+      targetPort: http
+---
+{{- end }}

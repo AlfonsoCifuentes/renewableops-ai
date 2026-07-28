@@ -1,0 +1,9 @@
+subscription_id           = "00000000-0000-0000-0000-000000000000"
+environment               = "dev"
+location                  = "westeurope"
+owner                     = "renewableops"
+monthly_budget_eur        = 25
+budget_contact_emails     = ["owner@example.invalid"]
+postgres_admin_password   = "inject-from-a-secure-secret-store"
+enable_paid_reference     = false
+allowed_deployer_object_ids = []

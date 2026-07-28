@@ -1,0 +1,20 @@
+image:
+  api:
+    repository: renewableops-api
+    tag: "1.0.0"
+  dashboard:
+    repository: renewableops-dashboard
+    tag: "1.0.0"
+replicaCount: 2
+publicDemo: true
+ingress:
+  enabled: true
+  className: nginx
+  host: renewableops.local
+resources:
+  api:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { cpu: "1", memory: 1Gi }
+  dashboard:
+    requests: { cpu: 75m, memory: 192Mi }
+    limits: { cpu: 500m, memory: 512Mi }

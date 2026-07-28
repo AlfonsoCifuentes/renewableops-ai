@@ -1,0 +1,12 @@
+site_name: RenewableOps AI
+site_description: Reproducible renewable operations and MLOps platform
+theme:
+  name: readthedocs
+nav:
+  - Inicio: README.md
+  - Arquitectura: docs/architecture/overview.md
+  - API: docs/api/README.md
+  - Dashboard: docs/dashboard/README.md
+  - Operaciones: docs/runbooks/local-operations.md
+  - Demo: docs/demo/demo-script.md
+  - Aceptación: docs/acceptance.md

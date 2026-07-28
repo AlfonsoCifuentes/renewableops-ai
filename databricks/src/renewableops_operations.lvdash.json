@@ -1,0 +1,166 @@
+{
+  "datasets": [
+    {
+      "displayName": "operations",
+      "name": "operations",
+      "query": "SELECT date_hour, technology, energy_mwh, actual_mw, expected_mw, availability, price_eur_mwh, mwh_at_risk, asset_count FROM gold_portfolio_hourly ORDER BY date_hour"
+    }
+  ],
+  "pages": [
+    {
+      "displayName": "Executive overview",
+      "layout": [
+        {
+          "position": { "height": 1, "width": 6, "x": 0, "y": 0 },
+          "widget": {
+            "name": "title",
+            "textbox_spec": "# RenewableOps AI · Executive overview\nGoverned demo data. SCADA telemetry is synthetic."
+          }
+        },
+        {
+          "position": { "height": 2, "width": 2, "x": 0, "y": 1 },
+          "widget": {
+            "name": "energy_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "operations",
+                  "disaggregated": false,
+                  "fields": [
+                    { "expression": "SUM(`energy_mwh`)", "name": "sum_energy_mwh" }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": { "showTitle": true, "title": "Energy · MWh" },
+              "encodings": {
+                "value": { "fieldName": "sum_energy_mwh", "displayName": "Energy" }
+              }
+            }
+          }
+        },
+        {
+          "position": { "height": 2, "width": 2, "x": 2, "y": 1 },
+          "widget": {
+            "name": "risk_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "operations",
+                  "disaggregated": false,
+                  "fields": [
+                    { "expression": "SUM(`mwh_at_risk`)", "name": "sum_risk" }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": { "showTitle": true, "title": "MWh at risk" },
+              "encodings": {
+                "value": { "fieldName": "sum_risk", "displayName": "MWh at risk" }
+              }
+            }
+          }
+        },
+        {
+          "position": { "height": 2, "width": 2, "x": 4, "y": 1 },
+          "widget": {
+            "name": "availability_counter",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "operations",
+                  "disaggregated": false,
+                  "fields": [
+                    { "expression": "AVG(`availability`)", "name": "avg_availability" }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": { "showTitle": true, "title": "Availability" },
+              "encodings": {
+                "value": { "fieldName": "avg_availability", "displayName": "Availability" }
+              }
+            }
+          }
+        },
+        {
+          "position": { "height": 5, "width": 6, "x": 0, "y": 3 },
+          "widget": {
+            "name": "generation_trend",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "operations",
+                  "disaggregated": false,
+                  "fields": [
+                    { "expression": "DATE_TRUNC(\"HOUR\", `date_hour`)", "name": "hour" },
+                    { "expression": "SUM(`actual_mw`)", "name": "actual_mw" },
+                    { "expression": "SUM(`expected_mw`)", "name": "expected_mw" }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "frame": { "showTitle": true, "title": "Actual vs expected generation" },
+              "encodings": {
+                "x": {
+                  "fieldName": "hour",
+                  "displayName": "Hour",
+                  "scale": { "type": "temporal" },
+                  "axis": { "title": "Hour" }
+                },
+                "y": {
+                  "fields": [
+                    { "fieldName": "actual_mw", "displayName": "Actual MW" },
+                    { "fieldName": "expected_mw", "displayName": "Expected MW" }
+                  ],
+                  "scale": { "type": "quantitative" },
+                  "axis": { "title": "MW" }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "displayName": "Data operations",
+      "layout": [
+        {
+          "position": { "height": 1, "width": 6, "x": 0, "y": 0 },
+          "widget": { "name": "data_title", "textbox_spec": "# Data operations\nFreshness, volume and quality are visible in the Lakeflow event log." }
+        }
+      ]
+    },
+    {
+      "displayName": "MLOps",
+      "layout": [
+        {
+          "position": { "height": 1, "width": 6, "x": 0, "y": 0 },
+          "widget": { "name": "ml_title", "textbox_spec": "# MLOps\nChampion/challenger promotion always requires a manual approval gate." }
+        }
+      ]
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED",
+      "widgetHeaderFontSize": 16
+    }
+  }
+}

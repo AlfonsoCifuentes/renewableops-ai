@@ -1,0 +1,26 @@
+{
+  "snapshot_version": "1.0.0",
+  "generated_at": "2026-07-28T00:00:00+00:00",
+  "pipeline_run_id": "run-20260728-0600-demo",
+  "data_status": "valid",
+  "is_demo": true,
+  "contains_synthetic_data": true,
+  "sources": [
+    "REData",
+    "AEMET",
+    "PVGIS",
+    "synthetic_scada"
+  ],
+  "files": {
+    "dashboard.json": "sha256:1461f9f1cf911bfa3cdad3885b5bcbe7e4ed84c1c42d21545b9ce7839d2f1b7a",
+    "overview.json": "sha256:a6639cd6b231f06d4a4c5a1401856e45b5303f6261b8de3d80fd757fa29d0d9e",
+    "assets.json": "sha256:7a3a8332ebd5a25001602ba37e1d0e935c2124ce02fc97e912a58f87eb4efa8d",
+    "forecasts.json": "sha256:0dfac17da6ec25d678593c8cb7c5d7e271e94d3d328ff9a36ec735df5e2cd1e9",
+    "anomalies.json": "sha256:ec3db4d2f3724bfbf44bd7d897e6716e1fa29bb6f1cbe2c161129554b5f6305d",
+    "market.json": "sha256:59994df1e71077a60bee60d42fd46ad0f93439f76cc83b57872607e2c78e72d9",
+    "model-health.json": "sha256:1abf82d1385533ac52826a01f8c1f471317f08c0362146fcbe8b35b675bdc53c",
+    "data-quality.json": "sha256:2f925965deb66ac8abfa6f2708b442cf2f8e23ace27d4c3107f6e7953b28357f",
+    "inspections.json": "sha256:14f6b626c0fe16474335081b6047554d7d610861dc997377fb526f64052ddbf9",
+    "system-health.json": "sha256:c2cdd2edc341001a760e1d6c3c6ea42259da9588a4e04a24053bad47d311b53d"
+  }
+}

@@ -1,0 +1,27 @@
+metrics:
+  - id: forecast_nmae
+    name: Forecast nMAE
+    definition: Mean absolute forecast error divided by installed capacity
+    formula: mean(abs(actual_mw - forecast_mw)) / installed_capacity_mw
+    grain: asset_day
+    dimensions: [asset_id, technology, horizon_hours, model_version]
+    unit: ratio
+    owner: ml_engineering
+    source: mart_forecast_performance
+    exclusions: [quality_flag != valid]
+    freshness: P1D
+    tests: [non_negative, below_one]
+    caveats: Demo telemetry is synthetic
+  - id: mwh_at_risk
+    name: MWh at risk
+    definition: Positive expected energy shortfall across active anomalies
+    formula: sum(max(expected_energy_mwh - actual_energy_mwh, 0))
+    grain: asset_hour
+    dimensions: [asset_id, technology, region, severity]
+    unit: MWh
+    owner: operations
+    source: mart_asset_health
+    exclusions: [curtailment_flag == true]
+    freshness: PT15M
+    tests: [non_negative]
+    caveats: Decision-support estimate, not a settlement value

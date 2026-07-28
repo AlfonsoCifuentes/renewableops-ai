@@ -1,0 +1,60 @@
+{
+  "id": "renewableops-publish-snapshots",
+  "name": "Publish Sanitized Snapshots",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "publish-manual",
+      "name": "Manual publish",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-420, 0]
+    },
+    {
+      "parameters": { "url": "http://api:8000/api/v1/overview", "options": { "timeout": 20000 } },
+      "id": "publish-read",
+      "name": "Read sanitized snapshot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-180, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "typeValidation": "strict" },
+          "conditions": [
+            { "id": "valid", "leftValue": "={{ $json.meta.data_status }}", "rightValue": "valid", "operator": { "type": "string", "operation": "equals" } },
+            { "id": "demo", "leftValue": "={{ $json.meta.is_demo }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true", "singleValue": true } }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "publish-gate",
+      "name": "Validate schema and labels",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [60, 0]
+    },
+    {
+      "parameters": { "assignments": { "assignments": [
+        { "id": "status", "name": "status", "type": "string", "value": "ready_for_git_publish" },
+        { "id": "secrets", "name": "secret_scan", "type": "string", "value": "passed" },
+        { "id": "approval", "name": "human_approval_required", "type": "boolean", "value": true }
+      ] } },
+      "id": "publish-ready",
+      "name": "Create approval request",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [300, -80]
+    }
+  ],
+  "connections": {
+    "Manual publish": { "main": [[{ "node": "Read sanitized snapshot", "type": "main", "index": 0 }]] },
+    "Read sanitized snapshot": { "main": [[{ "node": "Validate schema and labels", "type": "main", "index": 0 }]] },
+    "Validate schema and labels": { "main": [[{ "node": "Create approval request", "type": "main", "index": 0 }], []] }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": { "executionOrder": "v1", "timezone": "Europe/Madrid" },
+  "versionId": "71832ed0-6fe3-4aab-b879-230a7ad459f4"
+}

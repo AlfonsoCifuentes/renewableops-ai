@@ -1,0 +1,28 @@
+{
+  "name": "renewableops-ai",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/dashboard"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @renewableops/dashboard",
+    "build": "npm run build --workspace @renewableops/dashboard",
+    "lint": "npm run lint --workspace @renewableops/dashboard",
+    "typecheck": "npm run typecheck --workspace @renewableops/dashboard",
+    "test:ui": "npm run test --workspace @renewableops/dashboard",
+    "test:e2e": "npm run test:e2e --workspace @renewableops/dashboard"
+  },
+  "overrides": {
+    "brace-expansion": "5.0.8",
+    "minimatch": "10.2.6",
+    "postcss": "8.5.24",
+    "sharp": "0.35.3"
+  },
+  "devDependencies": {
+    "jsdom": "29.1.1"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

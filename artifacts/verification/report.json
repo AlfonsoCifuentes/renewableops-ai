@@ -1,0 +1,120 @@
+{
+  "generated_at": "2026-07-28T20:54:45.795668+00:00",
+  "python": "3.12.9 (main, Feb 12 2025, 14:52:31) [MSC v.1942 64 bit (AMD64)]",
+  "status": "passed",
+  "checks": [
+    {
+      "check": "lakehouse_artifacts",
+      "passed": true,
+      "evidence": [
+        "E:\\Proyectos\\Webs\\RenewableOpsAI\\data\\lakehouse\\bronze\\synthetic_scada.parquet",
+        "E:\\Proyectos\\Webs\\RenewableOpsAI\\data\\lakehouse\\silver\\generation.parquet",
+        "E:\\Proyectos\\Webs\\RenewableOpsAI\\data\\lakehouse\\gold\\forecast_evaluation.parquet"
+      ]
+    },
+    {
+      "check": "demo_rows",
+      "passed": true,
+      "evidence": 25920
+    },
+    {
+      "check": "portfolio_assets",
+      "passed": true,
+      "evidence": 12
+    },
+    {
+      "check": "synthetic_disclosure",
+      "passed": true,
+      "evidence": true
+    },
+    {
+      "check": "unique_silver_key",
+      "passed": true,
+      "evidence": 25920
+    },
+    {
+      "check": "forecast_quantiles",
+      "passed": true,
+      "evidence": 3370
+    },
+    {
+      "check": "manifest_hashes",
+      "passed": true,
+      "evidence": 3
+    },
+    {
+      "check": "official_source_registry",
+      "passed": true,
+      "evidence": [
+        "ree_redata",
+        "pvgis",
+        "aemet"
+      ]
+    },
+    {
+      "check": "model_registry_aliases",
+      "passed": true,
+      "evidence": "E:\\Proyectos\\Webs\\RenewableOpsAI\\data\\models\\model_registry.json"
+    },
+    {
+      "check": "model_artifacts",
+      "passed": true,
+      "evidence": [
+        "solar_forecast_champion.joblib",
+        "wind_forecast_champion.joblib",
+        "cv_solar_champion.joblib"
+      ]
+    },
+    {
+      "check": "mlflow_tracking",
+      "passed": true,
+      "evidence": {
+        "runs": 12
+      }
+    },
+    {
+      "check": "audit_chain",
+      "passed": true,
+      "evidence": {
+        "events": 16,
+        "invalid_index": null
+      }
+    },
+    {
+      "check": "n8n_workflows",
+      "passed": true,
+      "evidence": 6
+    },
+    {
+      "check": "public_snapshot",
+      "passed": true,
+      "evidence": "E:\\Proyectos\\Webs\\RenewableOpsAI\\apps\\dashboard\\public\\data\\manifest.json"
+    },
+    {
+      "check": "docker_compose",
+      "passed": true,
+      "evidence": "docker compose config validated separately"
+    },
+    {
+      "check": "databricks_bundle_definition",
+      "passed": true,
+      "evidence": "Lakeflow, Jobs, Unity Catalog and AI/BI resources are versioned"
+    },
+    {
+      "check": "platform_structural_validation",
+      "passed": true,
+      "evidence": {
+        "report": "E:\\Proyectos\\Webs\\RenewableOpsAI\\artifacts\\verification\\platform-validation.json",
+        "checks": [
+          "docker_compose_config",
+          "terraform_format",
+          "terraform_validate",
+          "kubernetes_kustomize",
+          "helm_lint",
+          "helm_template",
+          "databricks_bundle_schema"
+        ]
+      }
+    }
+  ]
+}

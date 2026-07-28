@@ -1,0 +1,206 @@
+"""Produce bounded acceptance evidence from the local repository state."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import sqlite3
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
+import joblib
+import pandas as pd
+import yaml
+from renewableops.audit import read_events, verify_chain
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def check(name: str, passed: bool, evidence: Any) -> dict[str, Any]:
+    return {"check": name, "passed": bool(passed), "evidence": evidence}
+
+
+def main() -> int:
+    results: list[dict[str, Any]] = []
+    bronze_path = ROOT / "data/lakehouse/bronze/synthetic_scada.parquet"
+    silver_path = ROOT / "data/lakehouse/silver/generation.parquet"
+    gold_path = ROOT / "data/lakehouse/gold/forecast_evaluation.parquet"
+    paths = [bronze_path, silver_path, gold_path]
+    results.append(
+        check(
+            "lakehouse_artifacts",
+            all(path.exists() for path in paths),
+            [str(path) for path in paths],
+        )
+    )
+
+    if all(path.exists() for path in paths):
+        bronze = pd.read_parquet(bronze_path)
+        silver = pd.read_parquet(silver_path)
+        gold = pd.read_parquet(gold_path)
+        results.extend(
+            [
+                check("demo_rows", len(silver) == 25_920, len(silver)),
+                check(
+                    "portfolio_assets",
+                    silver["asset_id"].nunique() == 12,
+                    int(silver["asset_id"].nunique()),
+                ),
+                check(
+                    "synthetic_disclosure",
+                    bool(bronze["is_synthetic"].all()),
+                    bool(bronze["is_synthetic"].all()),
+                ),
+                check(
+                    "unique_silver_key",
+                    not silver.duplicated(["asset_id", "timestamp_utc"]).any(),
+                    len(silver),
+                ),
+                check(
+                    "forecast_quantiles",
+                    bool(
+                        (gold["p10_mw"] <= gold["p50_mw"]).all()
+                        and (gold["p50_mw"] <= gold["p90_mw"]).all()
+                    ),
+                    len(gold),
+                ),
+            ]
+        )
+
+    manifest_dir = ROOT / "data/manifests"
+    manifests = sorted(manifest_dir.glob("*.json"))
+    manifest_valid = True
+    for path in manifests:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        artifact_name = {
+            "synthetic_scada_bronze": bronze_path,
+            "generation_silver": silver_path,
+            "forecast_evaluation_gold": gold_path,
+        }.get(payload["dataset_id"])
+        if artifact_name and payload["content_hash"] != f"sha256:{sha256(artifact_name)}":
+            manifest_valid = False
+    results.append(check("manifest_hashes", len(manifests) == 3 and manifest_valid, len(manifests)))
+
+    source_registry = yaml.safe_load(
+        (ROOT / "data/source_registry.yaml").read_text(encoding="utf-8")
+    )
+    official_sources = [
+        source
+        for source in source_registry["sources"]
+        if source["source_id"] in {"ree_redata", "pvgis", "aemet"}
+    ]
+    results.append(
+        check(
+            "official_source_registry",
+            len(official_sources) == 3 and all(source["enabled"] for source in official_sources),
+            [source["source_id"] for source in official_sources],
+        )
+    )
+
+    registry_path = ROOT / "data/models/model_registry.json"
+    registry = (
+        json.loads(registry_path.read_text(encoding="utf-8")) if registry_path.exists() else {}
+    )
+    alias_valid = all(
+        {"Champion", "Challenger"} <= set(item.get("aliases", {}))
+        for item in registry.get("aliases", {}).values()
+    )
+    results.append(check("model_registry_aliases", alias_valid, str(registry_path)))
+
+    forecast_models = [
+        ROOT / "data/models/solar_forecast_champion.joblib",
+        ROOT / "data/models/wind_forecast_champion.joblib",
+    ]
+    cv_model = ROOT / "data/models/cv_solar_champion.joblib"
+    model_paths = [*forecast_models, cv_model]
+    model_valid = all(
+        path.exists() and isinstance(joblib.load(path), dict) for path in forecast_models
+    ) and (cv_model.exists() and hasattr(joblib.load(cv_model), "predict_proba"))
+    results.append(check("model_artifacts", model_valid, [path.name for path in model_paths]))
+
+    mlflow_database = ROOT / "data/mlflow.db"
+    mlflow_runs = 0
+    if mlflow_database.exists():
+        with sqlite3.connect(mlflow_database) as connection:
+            mlflow_runs = int(connection.execute("SELECT count(*) FROM runs").fetchone()[0])
+    results.append(check("mlflow_tracking", mlflow_runs >= 6, {"runs": mlflow_runs}))
+
+    events = read_events(ROOT / "data/audit/events.jsonl")
+    audit_valid, invalid_index = verify_chain(events)
+    results.append(
+        check(
+            "audit_chain",
+            audit_valid and len(events) >= 3,
+            {"events": len(events), "invalid_index": invalid_index},
+        )
+    )
+
+    workflow_valid = True
+    workflows = sorted((ROOT / "workflows/n8n").glob("*.json"))
+    for path in workflows:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        workflow_valid &= {"name", "nodes", "connections"} <= payload.keys()
+    results.append(check("n8n_workflows", workflow_valid and len(workflows) == 6, len(workflows)))
+
+    public_manifest = ROOT / "apps/dashboard/public/data/manifest.json"
+    results.append(check("public_snapshot", public_manifest.exists(), str(public_manifest)))
+    results.append(
+        check(
+            "docker_compose",
+            (ROOT / "docker-compose.yml").exists(),
+            "docker compose config validated separately",
+        )
+    )
+    results.append(
+        check(
+            "databricks_bundle_definition",
+            (ROOT / "databricks/databricks.yml").exists(),
+            "Lakeflow, Jobs, Unity Catalog and AI/BI resources are versioned",
+        )
+    )
+    platform_report_path = ROOT / "artifacts/verification/platform-validation.json"
+    platform_report = (
+        json.loads(platform_report_path.read_text(encoding="utf-8"))
+        if platform_report_path.exists()
+        else {}
+    )
+    results.append(
+        check(
+            "platform_structural_validation",
+            platform_report.get("status") == "passed",
+            {
+                "report": str(platform_report_path),
+                "checks": [
+                    item.get("check")
+                    for item in platform_report.get("checks", [])
+                    if item.get("passed")
+                ],
+            },
+        )
+    )
+
+    report = {
+        "generated_at": datetime.now(UTC).isoformat(),
+        "python": sys.version,
+        "status": "passed" if all(item["passed"] for item in results) else "failed",
+        "checks": results,
+    }
+    output = ROOT / "artifacts/verification/report.json"
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(json.dumps(report, indent=2))
+    return 0 if report["status"] == "passed" else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

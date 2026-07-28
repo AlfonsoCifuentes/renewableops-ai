@@ -1,0 +1,19 @@
+resources:
+  pipelines:
+    renewableops_lakeflow:
+      name: renewableops_lakeflow_${bundle.target}
+      catalog: ${var.catalog}
+      target: ${var.schema}
+      serverless: true
+      channel: CURRENT
+      continuous: false
+      photon: true
+      libraries:
+        - notebook:
+            path: ../src/renewableops_databricks/pipeline.py
+      configuration:
+        renewableops.landing_path: /Volumes/${var.catalog}/${var.schema}/landing/scada
+        renewableops.source_timezone: UTC
+        spark.sql.session.timeZone: UTC
+      event_log:
+        name: event_log_renewableops

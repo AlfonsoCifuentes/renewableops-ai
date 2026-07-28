@@ -1,0 +1,16 @@
+{
+  "dataset_id": "generation_silver",
+  "dataset_version": "2026-07-28T201059Z",
+  "run_id": "run-20260728-0600-demo",
+  "source_ids": [
+    "synthetic_scada"
+  ],
+  "row_count": 25920,
+  "min_timestamp": "2026-04-29T01:00:00+00:00",
+  "max_timestamp": "2026-07-28T00:00:00+00:00",
+  "schema_hash": "565cdeeb9aae6949b0af8311170bc0b5ce3f640d166b110f69f9aba9aa4ec013",
+  "content_hash": "sha256:f9d41c44c5b4e7a5526f8887605c3c910685c4fee2dc2287fe2f5e27ce5f6204",
+  "code_commit": "working-tree",
+  "quality_status": "passed",
+  "contains_synthetic_data": true
+}

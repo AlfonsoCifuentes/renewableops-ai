@@ -1,0 +1,11 @@
+risk_id,category,title,likelihood,impact,inherent_risk,control,residual_risk,owner,status,evidence
+R-001,Data,Source outage,3,3,high,"retry, last-valid snapshot, freshness alert",medium,Data Engineering,active,docs/runbooks/local-operations.md
+R-002,Data,Sensor drift or frozen values,3,4,high,"physical rules, rolling checks, quarantine",medium,Operations Analytics,active,packages/core/src/renewableops/anomalies.py
+R-003,Model,Temporal leakage,2,5,high,"shift-before-roll, blocked 14d holdout, tests",low,ML Engineering,controlled,tests/unit/test_features.py
+R-004,Model,Regime change,3,4,high,"nMAE/bias/drift monitor, Challenger, human gate",medium,MLOps,active,data/models/model_registry.json
+R-005,Security,Malicious image upload,3,4,high,"MIME/size/decode/pixel cap, no persistence",medium,Application Security,controlled,apps/api/src/renewableops_api/main.py
+R-006,Security,Secret disclosure,2,5,high,"env injection, ignore rules, scans, Key Vault reference",low,Platform,controlled,.env.example
+R-007,Operations,Incorrect autonomous action,2,5,high,"no control plane, decision-support label, oversight",low,Operations,controlled,governance/prohibited-use.md
+R-008,Supply chain,Vulnerable dependency,3,4,high,"lockfiles, audit, documented exception, upgrade cadence",medium,Platform,accepted,governance/security-exceptions.md
+R-009,Privacy,Personal data introduced later,2,4,medium,"public schema, minimization, DPIA trigger",low,Privacy,monitor,governance/gdpr-assessment.md
+R-010,Cost,Unplanned Azure spend,3,3,high,"paid flag false, budget alert, no automatic apply",low,Cloud Owner,controlled,infra/terraform/azure

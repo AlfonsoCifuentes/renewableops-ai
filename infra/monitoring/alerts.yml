@@ -1,0 +1,25 @@
+groups:
+  - name: renewableops
+    rules:
+      - alert: RenewableOpsApiErrorRate
+        expr: |
+          sum(rate(renewableops_http_requests_total{status=~"5.."}[5m]))
+          /
+          clamp_min(sum(rate(renewableops_http_requests_total[5m])), 0.001)
+          > 0.05
+        for: 5m
+        labels:
+          severity: high
+        annotations:
+          summary: "RenewableOps API error rate is above 5%"
+      - alert: RenewableOpsApiLatency
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le) (rate(renewableops_http_request_duration_seconds_bucket[5m]))
+          ) > 0.5
+        for: 10m
+        labels:
+          severity: medium
+        annotations:
+          summary: "Forecast API P95 exceeds the engineering target"

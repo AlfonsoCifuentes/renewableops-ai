@@ -1,0 +1,49 @@
+{
+  "id": "renewableops-demo-scenarios",
+  "name": "Demo Scenarios",
+  "nodes": [
+    {
+      "parameters": { "httpMethod": "POST", "path": "demo/scenario", "responseMode": "responseNode", "options": {} },
+      "id": "demo-webhook",
+      "name": "Demo scenario webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-430, 0],
+      "webhookId": "4f7636c4-cf85-49c2-b632-38821b72e112"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8000/api/v1/scenarios",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify($json.body) }}",
+        "sendHeaders": true,
+        "headerParameters": { "parameters": [{ "name": "X-Correlation-ID", "value": "={{ $execution.id }}" }] },
+        "options": { "timeout": 60000 }
+      },
+      "id": "demo-api",
+      "name": "Execute isolated scenario",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-170, 0]
+    },
+    {
+      "parameters": { "respondWith": "json", "responseBody": "={{ $json }}", "options": { "responseCode": 200 } },
+      "id": "demo-response",
+      "name": "Return audited result",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [90, 0]
+    }
+  ],
+  "connections": {
+    "Demo scenario webhook": { "main": [[{ "node": "Execute isolated scenario", "type": "main", "index": 0 }]] },
+    "Execute isolated scenario": { "main": [[{ "node": "Return audited result", "type": "main", "index": 0 }]] }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": { "executionOrder": "v1", "timezone": "Europe/Madrid" },
+  "versionId": "65b0fb0b-53d7-4dc4-ab68-0fa9b77600ea"
+}

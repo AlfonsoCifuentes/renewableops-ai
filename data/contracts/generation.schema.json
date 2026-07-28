@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://renewableops.ai/contracts/generation.schema.json",
+  "title": "Generation record",
+  "type": "object",
+  "required": [
+    "timestamp_utc",
+    "asset_id",
+    "technology",
+    "power_mw",
+    "energy_mwh",
+    "availability",
+    "source_id",
+    "quality_flag",
+    "is_synthetic"
+  ],
+  "properties": {
+    "timestamp_utc": { "type": "string", "format": "date-time" },
+    "asset_id": { "type": "string", "minLength": 3 },
+    "technology": { "enum": ["solar", "wind", "battery"] },
+    "power_mw": { "type": "number", "minimum": -0.001 },
+    "energy_mwh": { "type": "number" },
+    "availability": { "type": "number", "minimum": 0, "maximum": 1 },
+    "curtailment_mw": { "type": "number", "minimum": 0 },
+    "source_id": { "type": "string" },
+    "quality_flag": { "enum": ["valid", "imputed", "suspect", "quarantined"] },
+    "is_synthetic": { "type": "boolean" },
+    "ingestion_run_id": { "type": "string" }
+  },
+  "additionalProperties": true
+}

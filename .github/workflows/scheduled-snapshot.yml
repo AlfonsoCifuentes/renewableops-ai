@@ -1,0 +1,29 @@
+name: Scheduled public snapshot
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 5 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --locked
+      - run: uv run renewableops run-demo --days 90
+      - run: uv run python scripts/verify_environment.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: renewableops-public-snapshot
+          retention-days: 30
+          path: |
+            apps/dashboard/public/data/
+            data/manifests/
+            artifacts/verification/report.json

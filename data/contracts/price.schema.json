@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://renewableops.local/contracts/price/1.0.0",
+  "title": "EnergyPrice",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["timestamp_utc", "market", "price_eur_mwh", "source_id"],
+  "properties": {
+    "timestamp_utc": {"type": "string", "format": "date-time"},
+    "market": {"type": "string", "enum": ["day_ahead", "intraday", "synthetic_reference"]},
+    "price_eur_mwh": {"type": "number", "minimum": -1000, "maximum": 10000},
+    "source_id": {"type": "string"},
+    "is_synthetic": {"type": "boolean"}
+  }
+}

@@ -1,0 +1,39 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# Node
+node_modules/
+.next/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# Generated / local state
+.env
+!.env.example
+artifacts/*
+!artifacts/screenshots/
+!artifacts/screenshots/*.png
+!artifacts/verification/
+!artifacts/verification/*.json
+!artifacts/demo/
+!artifacts/demo/*.webm
+data/mlruns/
+data/mlflow.db
+data/audit/
+*.log
+
+# Tooling / OS
+.databrickscfg
+.terraform/
+*.tfstate*
+.DS_Store
+Thumbs.db

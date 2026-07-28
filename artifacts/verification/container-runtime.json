@@ -1,0 +1,109 @@
+{
+  "generated_at": "2026-07-28T20:54:42.757088+00:00",
+  "scope": "live local Docker core + monitoring profiles",
+  "status": "passed",
+  "checks": [
+    {
+      "check": "container_profiles",
+      "passed": true,
+      "services": {
+        "api": {
+          "state": "running",
+          "health": "healthy",
+          "ports": "127.0.0.1:8000->8000/tcp"
+        },
+        "dashboard": {
+          "state": "running",
+          "health": "healthy",
+          "ports": "127.0.0.1:3000->3000/tcp"
+        },
+        "grafana": {
+          "state": "running",
+          "health": "",
+          "ports": "127.0.0.1:3001->3000/tcp"
+        },
+        "loki": {
+          "state": "running",
+          "health": "",
+          "ports": "3100/tcp"
+        },
+        "minio": {
+          "state": "running",
+          "health": "healthy",
+          "ports": "9000/tcp"
+        },
+        "mlflow": {
+          "state": "running",
+          "health": "healthy",
+          "ports": ""
+        },
+        "n8n": {
+          "state": "running",
+          "health": "",
+          "ports": "127.0.0.1:5678->5678/tcp"
+        },
+        "postgres": {
+          "state": "running",
+          "health": "healthy",
+          "ports": "5432/tcp"
+        },
+        "prometheus": {
+          "state": "running",
+          "health": "",
+          "ports": "127.0.0.1:9090->9090/tcp"
+        }
+      }
+    },
+    {
+      "check": "api_ready",
+      "passed": true,
+      "status": 200,
+      "body": "{\"status\":\"ready\",\"snapshot\":true,\"models\":true}"
+    },
+    {
+      "check": "dashboard_health",
+      "passed": true,
+      "status": 200,
+      "body": "{\"status\":\"healthy\",\"service\":\"renewableops-dashboard\"}"
+    },
+    {
+      "check": "n8n_health",
+      "passed": true,
+      "status": 200,
+      "body": "{\"status\":\"ok\"}"
+    },
+    {
+      "check": "grafana_health",
+      "passed": true,
+      "status": 200,
+      "body": "{\n  \"database\": \"ok\",\n  \"version\": \"12.1.0\",\n  \"commit\": \"ccd7b6ce7ea6184b8c7eb1de044174147dd9a648\"\n}"
+    },
+    {
+      "check": "prometheus_ready",
+      "passed": true,
+      "status": 200,
+      "body": "Prometheus Server is Ready.\n"
+    },
+    {
+      "check": "prometheus_targets",
+      "passed": true,
+      "targets": {
+        "prometheus": "up",
+        "renewableops-api": "up"
+      }
+    },
+    {
+      "check": "grafana_provisioning",
+      "passed": true,
+      "dashboards": {
+        "renewableops-health": "RenewableOps \u00b7 Platform health"
+      }
+    },
+    {
+      "check": "n8n_import_and_execution",
+      "passed": true,
+      "imported_workflows": 8,
+      "latest_execution_status": "success"
+    }
+  ]
+}

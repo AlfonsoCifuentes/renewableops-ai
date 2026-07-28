@@ -1,0 +1,88 @@
+{
+  "generated_at": "2026-07-28T20:55:12.817654+00:00",
+  "scope": "local structural validation; no cloud deployment",
+  "status": "passed",
+  "checks": [
+    {
+      "check": "docker_compose_config",
+      "passed": true,
+      "command": [
+        "docker.EXE",
+        "compose",
+        "config",
+        "--quiet"
+      ],
+      "returncode": 0,
+      "output": ""
+    },
+    {
+      "check": "terraform_format",
+      "passed": true,
+      "command": [
+        "terraform.exe",
+        "fmt",
+        "-check",
+        "-recursive"
+      ],
+      "returncode": 0,
+      "output": ""
+    },
+    {
+      "check": "terraform_validate",
+      "passed": true,
+      "command": [
+        "terraform.exe",
+        "validate",
+        "-no-color"
+      ],
+      "returncode": 0,
+      "output": "Success! The configuration is valid."
+    },
+    {
+      "check": "kubernetes_kustomize",
+      "passed": true,
+      "command": [
+        "kubectl.exe",
+        "kustomize",
+        "E:\\Proyectos\\Webs\\RenewableOpsAI\\infra\\kubernetes"
+      ],
+      "returncode": 0,
+      "output": "tmp\n---\napiVersion: batch/v1\nkind: CronJob\nmetadata:\n  labels:\n    app.kubernetes.io/part-of: renewableops-ai\n  name: renewableops-daily\n  namespace: renewableops-app\nspec:\n  concurrencyPolicy: Forbid\n  failedJobsHistoryLimit: 3\n  jobTemplate:\n    spec:\n      backoffLimit: 2\n      template:\n        metadata:\n          labels:\n            app.kubernetes.io/name: renewableops-daily\n        spec:\n          automountServiceAccountToken: false\n          containers:\n          - args:\n            - renewableops\n            - run-demo\n            - --days\n            - \"90\"\n            envFrom:\n            - configMapRef:\n                name: renewableops-config\n            image: renewableops-api:1.0.0\n            name: pipeline\n            resources:\n              limits:\n                cpu: \"2\"\n                memory: 2Gi\n              requests:\n                cpu: 250m\n                memory: 512Mi\n            securityContext:\n              allowPrivilegeEscalation: false\n              capabilities:\n                drop:\n                - ALL\n          restartPolicy: Never\n          securityContext:\n            runAsNonRoot: true\n            seccompProfile:\n              type: RuntimeDefault\n      ttlSecondsAfterFinished: 86400\n  schedule: 17 5 * * *\n  successfulJobsHistoryLimit: 2\n  timeZone: Europe/Madrid\n---\napiVersion: policy/v1\nkind: PodDisruptionBudget\nmetadata:\n  labels:\n    app.kubernetes.io/part-of: renewableops-ai\n  name: renewableops-api\n  namespace: renewableops-app\nspec:\n  minAvailable: 1\n  selector:\n    matchLabels:\n      app.kubernetes.io/name: renewableops-api\n---\napiVersion: autoscaling/v2\nkind: HorizontalPodAutoscaler\nmetadata:\n  labels:\n    app.kubernetes.io/part-of: renewableops-ai\n  name: renewableops-api\n  namespace: renewableops-app\nspec:\n  behavior:\n    scaleDown:\n      stabilizationWindowSeconds: 300\n  maxReplicas: 6\n  metrics:\n  - resource:\n      name: cpu\n      target:\n        averageUtilization: 70\n        type: Utilization\n    type: Resource\n  minReplicas: 2\n  scaleTargetRef:\n    apiVersion: apps/v1\n    kind: Deployment\n    name: renewableops-api\n---\napiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  annotations:\n    nginx.ingress.kubernetes.io/proxy-body-size: 5m\n    nginx.ingress.kubernetes.io/ssl-redirect: \"true\"\n  labels:\n    app.kubernetes.io/part-of: renewableops-ai\n  name: renewableops\n  namespace: renewableops-app\nspec:\n  ingressClassName: nginx\n  rules:\n  - host: renewableops.local\n    http:\n      paths:\n      - backend:\n          service:\n            name: renewableops-api\n            port:\n              name: http\n        path: /api\n        pathType: Prefix\n      - backend:\n          service:\n            name: renewableops-dashboard\n            port:\n              name: http\n        path: /\n        pathType: Prefix\n  tls:\n  - hosts:\n    - renewableops.local\n    secretName: renewableops-tls\n---\napiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  labels:\n    app.kubernetes.io/part-of: renewableops-ai\n  name: dashboard-to-api\n  namespace: renewableops-app\nspec:\n  ingress:\n  - from:\n    - podSelector:\n        matchLabels:\n          app.kubernetes.io/name: renewableops-dashboard\n    ports:\n    - port: 8000\n      protocol: TCP\n  podSelector:\n    matchLabels:\n      app.kubernetes.io/name: renewableops-api\n  policyTypes:\n  - Ingress\n---\napiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  labels:\n    app.kubernetes.io/part-of: renewableops-ai\n  name: default-deny\n  namespace: renewableops-app\nspec:\n  podSelector: {}\n  policyTypes:\n  - Ingress\n  - Egress\n---\napiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata:\n  labels:\n    app.kubernetes.io/part-of: renewableops-ai\n  name: dns-egress\n  namespace: renewableops-app\nspec:\n  egress:\n  - ports:\n    - port: 53\n      protocol: UDP\n    - port: 53\n      protocol: TCP\n    to:\n    - namespaceSelector:\n        matchLabels:\n          kubernetes.io/metadata.name: kube-system\n  podSelector: {}\n  policyTypes:\n  - Egress"
+    },
+    {
+      "check": "helm_lint",
+      "passed": true,
+      "command": [
+        "helm.exe",
+        "lint",
+        "--strict",
+        "E:\\Proyectos\\Webs\\RenewableOpsAI\\infra\\helm\\renewableops"
+      ],
+      "returncode": 0,
+      "output": "==> Linting E:\\Proyectos\\Webs\\RenewableOpsAI\\infra\\helm\\renewableops\n[INFO] Chart.yaml: icon is recommended\n\n1 chart(s) linted, 0 chart(s) failed"
+    },
+    {
+      "check": "helm_template",
+      "passed": true,
+      "command": [
+        "helm.exe",
+        "template",
+        "renewableops",
+        "E:\\Proyectos\\Webs\\RenewableOpsAI\\infra\\helm\\renewableops"
+      ],
+      "returncode": 0,
+      "output": "---\n# Source: renewableops/templates/app.yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: renewableops-api\nspec:\n  selector:\n    app.kubernetes.io/name: renewableops-api\n  ports:\n    - name: http\n      port: 8000\n      targetPort: http\n---\n# Source: renewableops/templates/app.yaml\napiVersion: v1\nkind: Service\nmetadata:\n  name: renewableops-dashboard\nspec:\n  selector:\n    app.kubernetes.io/name: renewableops-dashboard\n  ports:\n    - name: http\n      port: 3000\n      targetPort: http\n---\n# Source: renewableops/templates/app.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: renewableops-api\n  labels:\n    app.kubernetes.io/name: renewableops-api\nspec:\n  replicas: 2\n  selector:\n    matchLabels:\n      app.kubernetes.io/name: renewableops-api\n  template:\n    metadata:\n      labels:\n        app.kubernetes.io/name: renewableops-api\n    spec:\n      automountServiceAccountToken: false\n      securityContext:\n        runAsNonRoot: true\n        seccompProfile: { type: RuntimeDefault }\n      containers:\n        - name: api\n          image: \"renewableops-api:1.0.0\"\n          ports:\n            - name: http\n              containerPort: 8000\n          resources:\n            limits:\n              cpu: \"1\"\n              memory: 1Gi\n            requests:\n              cpu: 100m\n              memory: 256Mi\n          securityContext:\n            allowPrivilegeEscalation: false\n            capabilities: { drop: [\"ALL\"] }\n---\n# Source: renewableops/templates/app.yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: renewableops-dashboard\n  labels:\n    app.kubernetes.io/name: renewableops-dashboard\nspec:\n  replicas: 2\n  selector:\n    matchLabels:\n      app.kubernetes.io/name: renewableops-dashboard\n  template:\n    metadata:\n      labels:\n        app.kubernetes.io/name: renewableops-dashboard\n    spec:\n      automountServiceAccountToken: false\n      securityContext:\n        runAsNonRoot: true\n        seccompProfile: { type: RuntimeDefault }\n      containers:\n        - name: dashboard\n          image: \"renewableops-dashboard:1.0.0\"\n          ports:\n            - name: http\n              containerPort: 3000\n          resources:\n            limits:\n              cpu: 500m\n              memory: 512Mi\n            requests:\n              cpu: 75m\n              memory: 192Mi\n          securityContext:\n            allowPrivilegeEscalation: false\n            capabilities: { drop: [\"ALL\"] }"
+    },
+    {
+      "check": "databricks_bundle_schema",
+      "passed": true,
+      "command": [
+        "python.exe",
+        "E:\\Proyectos\\Webs\\RenewableOpsAI\\scripts\\validate_databricks_bundle.py",
+        "C:\\Users\\Fonnzer\\AppData\\Local\\Temp\\renewableops-databricks-1.9.0\\databricks.exe"
+      ],
+      "returncode": 0,
+      "output": "Name: renewableops-ai\nTarget: dev\nWorkspace:\n  User: offline-validator@example.invalid\n  Path: /Workspace/Users/offline-validator@example.invalid/.bundle/renewableops-ai/dev\n\nValidation OK!"
+    }
+  ]
+}
