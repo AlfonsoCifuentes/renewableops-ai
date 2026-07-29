@@ -9,6 +9,8 @@ procedencia visible.
 > Sistema de apoyo a decisiones. No controla equipos, no ejecuta trading y no
 > sustituye una inspección técnica ni una evaluación legal.
 
+[Demo en producción](https://renewableops-ai.vercel.app)
+
 ![Overview de RenewableOps AI](artifacts/screenshots/overview-final.png)
 
 ## Qué está terminado
