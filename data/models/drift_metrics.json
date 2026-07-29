@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-29T10:33:32.029248+00:00",
+  "generated_at": "2026-07-29T20:29:50.485691+00:00",
   "method": "Population Stability Index with reference-decile bins",
   "scope": "immediately preceding reference window vs current synthetic demo telemetry; monitoring evidence, not causal diagnosis",
   "technologies": {

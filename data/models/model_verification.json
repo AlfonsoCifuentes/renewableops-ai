@@ -1,12 +1,12 @@
 {
   "schema_version": "1.0.0",
-  "generated_at": "2026-07-29T20:17:27.239797+00:00",
+  "generated_at": "2026-07-29T20:33:39.649379+00:00",
   "status": "passed",
   "run": {
-    "training_run_id": "run-20260729T103043Z-09cba632",
-    "training_code_commit": "1ce80160aed7e3d5eff56ff184148ba01898edc5",
-    "verification_code_commit": "e1dd00a7b3b472da67b53e9fcdf286d1351e5915",
-    "registry_generated_at": "2026-07-29T10:31:22.835608+00:00"
+    "training_run_id": "run-20260729T202903Z-158944c9",
+    "training_code_commit": "2bbc59f3c0810917baed50a52858ff0f15d9bea8",
+    "verification_code_commit": "2bbc59f3c0810917baed50a52858ff0f15d9bea8",
+    "registry_generated_at": "2026-07-29T20:29:50.495182+00:00"
   },
   "learning": {
     "mode": "offline_batch_retraining",
@@ -32,7 +32,7 @@
   "dataset": {
     "manifest": "data/manifests/generation_silver.json",
     "dataset_id": "generation_silver",
-    "version": "2026-07-29T103233Z",
+    "version": "2026-07-29T202904Z",
     "row_count": 25920,
     "min_timestamp": "2026-04-29T01:00:00+00:00",
     "max_timestamp": "2026-07-28T00:00:00+00:00",
@@ -51,7 +51,7 @@
     "status": "verified",
     "backend": "local SQLite",
     "experiment": "renewableops-local-forecast",
-    "runs": 55,
+    "runs": 65,
     "note": "Local tracking state is verified but intentionally not published as a database."
   },
   "artifacts": [
@@ -115,8 +115,8 @@
       "approval": {
         "status": "approved",
         "approver": "Alfonso Cifuentes",
-        "reviewed_at": "2026-07-29T20:17:05.250756+00:00",
-        "evidence_hash": "sha256:718269b00978ae66eee50080e52bb4a3f3e0a479203d43c816f62b2001422320",
+        "reviewed_at": "2026-07-29T20:33:16.744516+00:00",
+        "evidence_hash": "sha256:b86c62c8bae63e66f6d9fa853c9955921eab17d425d13f0cc23485873894c1b5",
         "scope": "portfolio_demo_inference"
       }
     },
@@ -180,8 +180,8 @@
       "approval": {
         "status": "approved",
         "approver": "Alfonso Cifuentes",
-        "reviewed_at": "2026-07-29T20:17:26.465436+00:00",
-        "evidence_hash": "sha256:2c4ca6abc00fd9871abb7b0ef49716cb35b046e0dbf03dc8d0bd8123cfc2a259",
+        "reviewed_at": "2026-07-29T20:33:38.874905+00:00",
+        "evidence_hash": "sha256:ef9122f308c2981a838e4e85aedb7eeeab5ab7b51ceb94ff2cf66326491708a1",
         "scope": "portfolio_demo_inference"
       }
     }

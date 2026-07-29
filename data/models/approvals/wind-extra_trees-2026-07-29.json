@@ -6,13 +6,13 @@
   "model": "extra_trees",
   "alias": "Champion",
   "approver": "Alfonso Cifuentes",
-  "rationale": "Aprobación explícita del propietario para la demostración de portfolio tras revisar validación temporal, integridad del artefacto, inferencia de humo y limitaciones.",
-  "reviewed_at": "2026-07-29T20:17:26.465436+00:00",
+  "rationale": "Aprobación previa del propietario para demostración de portfolio; champion seleccionado por MAE de validación temporal y verificado mediante inferencia real.",
+  "reviewed_at": "2026-07-29T20:33:38.874905+00:00",
   "dataset": {
     "manifest": "data/manifests/generation_silver.json",
     "content_hash": "sha256:a3157e7fa0c9dacc6baf57c1a045d103d7766f1682a6cf89a5f83efbd3b18ae3",
     "schema_hash": "76127ce15303e34d39cfd5a15a4544ac8d64d8b266149b4ab015ceaed3c3e84b",
-    "run_id": "run-20260729T103043Z-09cba632"
+    "run_id": "run-20260729T202903Z-158944c9"
   },
   "artifact": {
     "file": "data/models/wind_forecast_champion.joblib",
@@ -51,5 +51,5 @@
     "Approval covers portfolio demonstration inference, not autonomous control.",
     "A new artifact hash or training run requires a new human approval."
   ],
-  "evidence_hash": "sha256:2c4ca6abc00fd9871abb7b0ef49716cb35b046e0dbf03dc8d0bd8123cfc2a259"
+  "evidence_hash": "sha256:ef9122f308c2981a838e4e85aedb7eeeab5ab7b51ceb94ff2cf66326491708a1"
 }

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-29T20:06:48.333481+00:00",
+  "generated_at": "2026-07-29T20:34:34.950010+00:00",
   "python": "3.12.9 (main, Feb 12 2025, 14:52:31) [MSC v.1942 64 bit (AMD64)]",
   "status": "passed",
   "checks": [
@@ -92,14 +92,14 @@
       "check": "mlflow_tracking",
       "passed": true,
       "evidence": {
-        "runs": 55
+        "runs": 65
       }
     },
     {
       "check": "audit_chain",
       "passed": true,
       "evidence": {
-        "events": 56,
+        "events": 70,
         "invalid_index": null
       }
     },
@@ -113,7 +113,7 @@
       "passed": true,
       "evidence": {
         "path": "E:\\Proyectos\\Webs\\RenewableOpsAI\\apps\\dashboard\\public\\data\\manifest.json",
-        "files": 12,
+        "files": 13,
         "checksums": true,
         "sanitized": true,
         "sources": [

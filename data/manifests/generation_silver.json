@@ -1,7 +1,7 @@
 {
   "dataset_id": "generation_silver",
-  "dataset_version": "2026-07-29T103233Z",
-  "run_id": "run-20260729T103043Z-09cba632",
+  "dataset_version": "2026-07-29T202904Z",
+  "run_id": "run-20260729T202903Z-158944c9",
   "source_ids": [
     "synthetic_scada"
   ],
@@ -10,7 +10,7 @@
   "max_timestamp": "2026-07-28T00:00:00+00:00",
   "schema_hash": "76127ce15303e34d39cfd5a15a4544ac8d64d8b266149b4ab015ceaed3c3e84b",
   "content_hash": "sha256:a3157e7fa0c9dacc6baf57c1a045d103d7766f1682a6cf89a5f83efbd3b18ae3",
-  "code_commit": "1ce80160aed7e3d5eff56ff184148ba01898edc5",
+  "code_commit": "2bbc59f3c0810917baed50a52858ff0f15d9bea8",
   "quality_status": "passed",
   "contains_synthetic_data": true
 }

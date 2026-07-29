@@ -1,6 +1,6 @@
 {
   "registry_version": "1.0.0",
-  "generated_at": "2026-07-29T10:31:22.835608+00:00",
+  "generated_at": "2026-07-29T20:29:50.495182+00:00",
   "dataset_manifest": "data/manifests/generation_silver.json",
   "aliases": {
     "solar": {
@@ -49,10 +49,10 @@
         "status": "approved",
         "required": true,
         "approver": "Alfonso Cifuentes",
-        "reviewed_at": "2026-07-29T20:17:05.250756+00:00",
-        "rationale": "Aprobación explícita del propietario para la demostración de portfolio tras revisar validación temporal, integridad del artefacto, inferencia de humo y limitaciones.",
+        "reviewed_at": "2026-07-29T20:33:16.744516+00:00",
+        "rationale": "Aprobación previa del propietario para demostración de portfolio; champion seleccionado por MAE de validación temporal y verificado mediante inferencia real.",
         "artifact_sha256": "sha256:4218f184e62102c8894292461da0faa3340cfc13427196dbcef6ebc518d6988c",
-        "evidence_hash": "sha256:718269b00978ae66eee50080e52bb4a3f3e0a479203d43c816f62b2001422320",
+        "evidence_hash": "sha256:b86c62c8bae63e66f6d9fa853c9955921eab17d425d13f0cc23485873894c1b5",
         "receipt": "data/models/approvals/solar-random_forest-2026-07-29.json",
         "template": "governance/approvals/model-promotion-template.md"
       },
@@ -105,10 +105,10 @@
         "status": "approved",
         "required": true,
         "approver": "Alfonso Cifuentes",
-        "reviewed_at": "2026-07-29T20:17:26.465436+00:00",
-        "rationale": "Aprobación explícita del propietario para la demostración de portfolio tras revisar validación temporal, integridad del artefacto, inferencia de humo y limitaciones.",
+        "reviewed_at": "2026-07-29T20:33:38.874905+00:00",
+        "rationale": "Aprobación previa del propietario para demostración de portfolio; champion seleccionado por MAE de validación temporal y verificado mediante inferencia real.",
         "artifact_sha256": "sha256:f0d79045ba39253df8c11dc2537f43c589238c39517b0ef2c8bfd889488f2e1d",
-        "evidence_hash": "sha256:2c4ca6abc00fd9871abb7b0ef49716cb35b046e0dbf03dc8d0bd8123cfc2a259",
+        "evidence_hash": "sha256:ef9122f308c2981a838e4e85aedb7eeeab5ab7b51ceb94ff2cf66326491708a1",
         "receipt": "data/models/approvals/wind-extra_trees-2026-07-29.json",
         "template": "governance/approvals/model-promotion-template.md"
       },
