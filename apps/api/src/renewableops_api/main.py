@@ -206,7 +206,11 @@ def anomalies() -> list[dict[str, object]]:
 @app.get("/api/v1/models", tags=["mlops"])
 def models() -> dict[str, object]:
     payload = _dashboard()
-    return {"champions": payload["champions"], "metrics": payload["model_metrics"]}
+    return {
+        "champions": payload["champions"],
+        "metrics": payload["model_metrics"],
+        "evidence": payload.get("ml_evidence", {}),
+    }
 
 
 @app.post("/api/v1/forecast", response_model=ForecastResponse, tags=["forecast"])
@@ -214,7 +218,43 @@ def forecast(request: ForecastRequest) -> ForecastResponse:
     artifact_path = MODEL_DIR / f"{request.technology}_forecast_champion.joblib"
     if not artifact_path.exists():
         raise HTTPException(status_code=503, detail="Forecast model is not ready")
+    registry_path = MODEL_DIR / "model_registry.json"
+    if not registry_path.exists():
+        raise HTTPException(status_code=503, detail="Model registry is not ready")
+    registry: object = json.loads(registry_path.read_text(encoding="utf-8"))
+    if not isinstance(registry, dict):
+        raise HTTPException(status_code=503, detail="Model registry is malformed")
+    aliases = registry.get("aliases")
+    technology_record = aliases.get(request.technology) if isinstance(aliases, dict) else None
+    approval = (
+        technology_record.get("approval")
+        if isinstance(technology_record, dict)
+        else None
+    )
+    if not isinstance(approval, dict) or approval.get("status") != "approved":
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "code": "MODEL_NOT_APPROVED",
+                "message": "The selected model has not passed the human approval gate.",
+            },
+        )
+    approved_record = cast(dict[str, Any], technology_record)
     artifact = joblib.load(artifact_path)
+    model_aliases = approved_record.get("aliases")
+    selected_model = (
+        model_aliases.get("Champion")
+        if isinstance(model_aliases, dict)
+        else None
+    )
+    if selected_model != artifact.get("model_name"):
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "code": "MODEL_ARTIFACT_MISMATCH",
+                "message": "Registry alias and serialized artifact do not match.",
+            },
+        )
     values = request.model_dump()
     installed_capacity = float(values.pop("installed_capacity_mw"))
     values.pop("technology")

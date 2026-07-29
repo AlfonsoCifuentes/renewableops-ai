@@ -542,6 +542,22 @@ def build_dashboard_snapshot(
         )
 
     model_metrics = [asdict(metric) for metric in metrics]
+    model_verification = _load_json(DATA_DIR / "models" / "model_verification.json")
+    raw_verified_artifacts = model_verification.get("artifacts")
+    verified_artifacts = (
+        {
+            str(item.get("technology")): item
+            for item in raw_verified_artifacts
+            if isinstance(item, dict)
+        }
+        if isinstance(raw_verified_artifacts, list)
+        else {}
+    )
+    model_registry = _load_json(DATA_DIR / "models" / "model_registry.json")
+    raw_registry_aliases = model_registry.get("aliases")
+    registry_aliases = (
+        raw_registry_aliases if isinstance(raw_registry_aliases, dict) else {}
+    )
     forecast_horizon_metrics: dict[str, list[dict[str, Any]]] = {}
     for technology in ("solar", "wind"):
         evidence = _load_json(
@@ -569,6 +585,27 @@ def build_dashboard_snapshot(
         )
         champion = candidates[0]
         challenger = candidates[1]
+        registry_record = registry_aliases.get(technology)
+        registry_entry = registry_record if isinstance(registry_record, dict) else {}
+        raw_approval = registry_entry.get("approval")
+        approval = raw_approval if isinstance(raw_approval, dict) else {}
+        raw_model_aliases = registry_entry.get("aliases")
+        model_aliases = raw_model_aliases if isinstance(raw_model_aliases, dict) else {}
+        verified_artifact = verified_artifacts.get(technology, {})
+        approval_matches_artifact = (
+            approval.get("artifact_sha256") == verified_artifact.get("sha256")
+            and model_aliases.get("Champion") == champion["model"]
+        )
+        approval_status = (
+            "approved"
+            if approval.get("status") == "approved" and approval_matches_artifact
+            else "pending"
+        )
+        approved_by = (
+            f"{approval.get('approver')} · demo inference"
+            if approval_status == "approved"
+            else "Pending manual approval"
+        )
         raw_drift = drift_rows.get(technology)
         drift = raw_drift if isinstance(raw_drift, dict) else {}
         champions.append(
@@ -576,8 +613,21 @@ def build_dashboard_snapshot(
                 **champion,
                 "version": "1.0.0",
                 "alias": "Champion · evaluation",
-                "stage": "Review required",
-                "approved_by": "Pending manual approval",
+                "stage": (
+                    "Approved · demo inference"
+                    if approval_status == "approved"
+                    else "Review required"
+                ),
+                "approved_by": approved_by,
+                "approval_status": approval_status,
+                "approval_reviewed_at": approval.get("reviewed_at"),
+                "approval_evidence_hash": approval.get("evidence_hash"),
+                "artifact_sha256": verified_artifact.get("sha256"),
+                "artifact_size_bytes": verified_artifact.get("size_bytes"),
+                "estimator_class": verified_artifact.get("estimator_class"),
+                "fitted_tree_count": verified_artifact.get("fitted_tree_count"),
+                "smoke_inference": verified_artifact.get("smoke_inference"),
+                "selection_rank": 1,
                 "drift_status": str(drift.get("status", "not_measured")),
                 "drift_max_psi": drift.get("max_psi"),
                 "feature_drift": drift.get("feature_psi", {}),
@@ -591,8 +641,19 @@ def build_dashboard_snapshot(
                 **challenger,
                 "version": "1.0.0-rc1",
                 "alias": "Challenger",
-                "stage": "Offline evaluation",
-                "approved_by": "Not requested",
+                "stage": "Evaluated · not selected",
+                "approved_by": "Promotion not recommended",
+                "approval_status": "not_requested",
+                "selection_rank": 2,
+                "validation_delta_percent": _safe_number(
+                    (
+                        float(challenger["validation_mae_mw"])
+                        / max(float(champion["validation_mae_mw"]), 1e-9)
+                        - 1
+                    )
+                    * 100,
+                    2,
+                ),
                 "drift_status": str(drift.get("status", "not_measured")),
                 "drift_max_psi": drift.get("max_psi"),
                 "trained_at": snapshot_generated_at.isoformat(),
@@ -753,6 +814,7 @@ def build_dashboard_snapshot(
         "model_metrics": model_metrics,
         "champions": champions,
         "challengers": challengers,
+        "ml_evidence": model_verification,
         "drift": drift_payload,
         "cv_metrics": cv_metrics,
         "market": market,
@@ -865,7 +927,9 @@ def publish_snapshot(
             "champions": payload["champions"],
             "challengers": payload["challengers"],
             "metrics": payload["model_metrics"],
+            "evidence": payload["ml_evidence"],
         },
+        "model-evidence.json": payload["ml_evidence"],
         "data-quality.json": payload["quality"],
         "inspections.json": payload["inspections"],
         "sources.json": payload["sources"],

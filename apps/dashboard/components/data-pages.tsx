@@ -1,13 +1,18 @@
 "use client";
 
 import {
+  Activity,
   ArrowDownToLine,
+  BrainCircuit,
   CheckCircle2,
+  Cpu,
   Database,
+  FileCheck2,
+  FlaskConical,
   GitBranch,
-  RotateCcw,
   Search,
   ShieldCheck,
+  SquareTerminal,
 } from "lucide-react";
 import type { EChartsOption } from "echarts";
 import { useMemo, useState } from "react";
@@ -148,50 +153,210 @@ export function DataQuality({ data }: { data: DashboardSnapshot }) {
   );
 }
 
+function shortHash(value?: string | null) {
+  if (!value) return "—";
+  const hash = value.replace("sha256:", "");
+  return `${hash.slice(0, 10)}…${hash.slice(-6)}`;
+}
+
+function megabytes(bytes?: number | null) {
+  return bytes ? `${formatNumber(bytes / 1024 / 1024, 2)} MB` : "—";
+}
+
 export function Mlops({ data }: { data: DashboardSnapshot }) {
+  const championKeys = new Set(
+    data.champions.map((model) => `${model.technology}:${model.model}`),
+  );
   const comparison: EChartsOption = {
     grid: { left: 50, right: 12, top: 14, bottom: 62 },
     tooltip: { trigger: "axis" },
     xAxis: { ...baseAxis, type: "category", data: data.model_metrics.map((item) => `${item.technology}\n${item.model}`), axisLabel: { ...baseAxis.axisLabel, rotate: 24 }, splitLine: { show: false } },
-    yAxis: { ...baseAxis, type: "value", name: "nMAE", axisLabel: { formatter: (value: number) => `${formatNumber(value * 100)}%` } },
-    series: [{ type: "bar", data: data.model_metrics.map((item) => item.nmae), itemStyle: { color: (params: { dataIndex: number }) => params.dataIndex % 3 === 0 ? chartTheme.green : "#bfc7c0", borderRadius: [3, 3, 0, 0] }, barMaxWidth: 28 }],
+    yAxis: { ...baseAxis, type: "value", name: "MAE validación", axisLabel: { formatter: (value: number) => `${formatNumber(value)} MW` } },
+    series: [{
+      type: "bar",
+      data: data.model_metrics.map((item) => ({
+        value: item.validation_mae_mw,
+        itemStyle: {
+          color: championKeys.has(`${item.technology}:${item.model}`)
+            ? chartTheme.green
+            : "#c5cbc6",
+          borderRadius: [3, 3, 0, 0],
+        },
+      })),
+      barMaxWidth: 28,
+    }],
   };
+  const evidence = data.ml_evidence;
+
   return (
     <>
-      <SectionHeader eyebrow="Registry · MLflow" title="Modelos con criterio de promoción." description="Champion y challengers comparados por precisión, robustez, latencia, drift y aprobación humana." />
+      <SectionHeader
+        eyebrow="Registry · MLflow · Evidencia ejecutable"
+        title="El entrenamiento deja pruebas."
+        description="Artefactos reales, validación temporal, inferencia de humo, hashes y aprobación humana vinculados a una ejecución reproducible."
+      />
+
+      <div className="ml-proof-grid">
+        <article>
+          <span className="ml-proof-icon"><FileCheck2 size={16} /></span>
+          <div><small>Verificación</small><strong>{evidence.status}</strong><p>{evidence.checks.filter((check) => check.passed).length}/{evidence.checks.length} checks</p></div>
+        </article>
+        <article>
+          <span className="ml-proof-icon"><FlaskConical size={16} /></span>
+          <div><small>Experimento</small><strong>{evidence.learning.candidate_count} candidatos</strong><p>{evidence.learning.algorithm_count} algoritmos · 2 tecnologías</p></div>
+        </article>
+        <article>
+          <span className="ml-proof-icon"><Cpu size={16} /></span>
+          <div><small>Artefactos cargados</small><strong>{evidence.artifacts.length} ejecutables</strong><p>joblib · inferencia comprobada</p></div>
+        </article>
+        <article>
+          <span className="ml-proof-icon"><Activity size={16} /></span>
+          <div><small>MLflow local</small><strong>{evidence.tracking.runs} runs</strong><p>{evidence.tracking.experiment}</p></div>
+        </article>
+      </div>
+
+      <Panel className="learning-evidence-panel">
+        <div className="learning-disclosure">
+          <div>
+            <Badge tone="info">batch learning</Badge>
+            <h2>Se reentrena; no aprende en el navegador.</h2>
+            <p>
+              Los modelos se ajustan de cero sobre un dataset versionado. No existe aprendizaje
+              online ni cambios silenciosos en producción: cada nuevo artefacto necesita otra
+              validación y otra aprobación.
+            </p>
+          </div>
+          <div className="ml-training-flow" aria-label="Flujo de entrenamiento">
+            {[
+              ["01", "Dataset", `${formatNumber(evidence.dataset.row_count ?? 0)} filas`],
+              ["02", "Features", `${evidence.artifacts[0]?.feature_count ?? 0} variables`],
+              ["03", "Validación", `${evidence.learning.validation_folds} folds + gap ${evidence.learning.validation_gap_hours} h`],
+              ["04", "Selección", "MAE temporal"],
+              ["05", "Holdout", `${evidence.learning.blocked_test_days} días intactos`],
+            ].map(([step, label, detail]) => (
+              <div key={step}><span>{step}</span><strong>{label}</strong><small>{detail}</small></div>
+            ))}
+          </div>
+        </div>
+        <div className="reproduce-strip">
+          <SquareTerminal size={15} />
+          <span>Reentrenar</span>
+          <code>{evidence.learning.reproduce_command}</code>
+          <span>Verificar</span>
+          <code>{evidence.learning.verify_command}</code>
+        </div>
+      </Panel>
+
       <div className="champion-grid">
         {data.champions.map((model) => (
           <Panel key={model.technology} className="champion-card">
-            <div className="champion-top"><Badge tone="success">champion</Badge><span>{model.technology}</span></div>
-            <h2>{model.model.replaceAll("_", " ")}</h2>
-            <p>v{model.version} · {model.stage}</p>
-            <div className="champion-metrics">
-              <div><span>nMAE</span><strong>{formatNumber(model.nmae * 100)}%</strong></div>
-              <div><span>Skill</span><strong>+{formatNumber(model.skill_vs_persistence * 100)}%</strong></div>
-              <div><span>Coverage</span><strong>{formatNumber(model.coverage_p10_p90 * 100)}%</strong></div>
-              <div><span>Drift PSI</span><strong>{model.drift_max_psi === null || model.drift_max_psi === undefined ? "—" : formatNumber(model.drift_max_psi, 3)}</strong></div>
+            <div className="champion-top">
+              <div><Badge tone="success">champion</Badge><Badge tone={model.approval_status === "approved" ? "info" : "warning"}>{model.approval_status}</Badge></div>
+              <span>{model.technology}</span>
             </div>
-            <p>Selección: {model.validation_folds} folds temporales · gap {model.validation_gap_hours} h · MAE {formatNumber(model.validation_mae_mw, 3)} MW</p>
-            <div className="approval-line"><ShieldCheck size={15} /><span>{model.approved_by}</span></div>
-          </Panel>
-        ))}
-        {data.challengers.map((model) => (
-          <Panel className="challenger-card" key={`challenger-${model.technology}`}>
-            <Badge tone="warning">challenger</Badge>
             <h2>{model.technology} · {model.model.replaceAll("_", " ")}</h2>
             <p>v{model.version} · {model.stage}</p>
-            <div className="gate-list">
-              <span><CheckCircle2 size={14} /> Métricas temporales registradas</span>
-              <span><CheckCircle2 size={14} /> Artefacto reproducible</span>
-              <span className="gate-wait"><RotateCcw size={14} /> Aprobación humana pendiente</span>
+            <div className="champion-metrics">
+              <div><span>MAE validación</span><strong>{formatNumber(model.validation_mae_mw, 3)} MW</strong></div>
+              <div><span>MAE holdout</span><strong>{formatNumber(model.mae_mw, 3)} MW</strong></div>
+              <div><span>Skill vs t−24 h</span><strong>+{formatNumber(model.skill_vs_persistence * 100)}%</strong></div>
+              <div><span>Cobertura P10–P90</span><strong>{formatNumber(model.coverage_p10_p90 * 100)}%</strong></div>
             </div>
-            <button type="button" className="button button-secondary" disabled>No desplegado</button>
+            <div className="artifact-signature">
+              <span>{model.estimator_class} · {model.fitted_tree_count ?? "—"} árboles</span>
+              <span>{megabytes(model.artifact_size_bytes)} · {shortHash(model.artifact_sha256)}</span>
+            </div>
+            <div className={`approval-line ${model.approval_status === "approved" ? "is-approved" : ""}`}>
+              <ShieldCheck size={15} />
+              <span>{model.approved_by}</span>
+            </div>
           </Panel>
         ))}
       </div>
-      <Panel eyebrow="Experimentos" title="Comparación temporal">
+
+      <Panel
+        className="model-proof-panel"
+        eyebrow="Prueba de ejecución"
+        title="Los artefactos cargan y producen inferencias"
+        action={<Badge tone={evidence.status === "passed" ? "success" : "critical"}>{evidence.status}</Badge>}
+      >
+        <div className="model-proof-list">
+          {evidence.artifacts.map((artifact) => (
+            <article key={artifact.technology}>
+              <div className="proof-status"><CheckCircle2 size={15} /><span>{artifact.smoke_inference.status}</span></div>
+              <div><small>Modelo serializado</small><strong>{artifact.technology} · {artifact.model.replaceAll("_", " ")}</strong><p>{artifact.estimator_class} · seed {artifact.seed}</p></div>
+              <div><small>Predicción de humo</small><strong>{formatNumber(artifact.smoke_inference.point_prediction_mw, 3)} MW</strong><p>P10 {formatNumber(artifact.smoke_inference.served_quantiles_mw.p10, 2)} · P90 {formatNumber(artifact.smoke_inference.served_quantiles_mw.p90, 2)}</p></div>
+              <div><small>Integridad</small><strong>{shortHash(artifact.sha256)}</strong><p>{megabytes(artifact.size_bytes)} · {artifact.feature_count} features</p></div>
+            </article>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel eyebrow="Selección sin leakage" title="MAE de validación temporal">
         <Chart option={comparison} height={330} ariaLabel="Comparación de modelos registrados" />
       </Panel>
+
+      <Panel eyebrow="Leaderboard" title="Qué modelos se entrenaron y qué resultado obtuvieron">
+        <div className="model-leaderboards">
+          {(["solar", "wind"] as const).map((technology) => {
+            const rows = data.model_metrics
+              .filter((model) => model.technology === technology)
+              .toSorted((first, second) => first.validation_mae_mw - second.validation_mae_mw);
+            return (
+              <div key={technology}>
+                <div className="leaderboard-title"><span>{technology}</span><small>ranking por validación</small></div>
+                <table>
+                  <thead><tr><th>#</th><th>Modelo</th><th>Validación</th><th>Holdout</th><th>Skill</th></tr></thead>
+                  <tbody>
+                    {rows.map((model, index) => (
+                      <tr key={`${technology}-${model.model}`} className={index === 0 ? "is-champion" : ""}>
+                        <td>{String(index + 1).padStart(2, "0")}</td>
+                        <td><strong>{model.model.replaceAll("_", " ")}</strong>{index === 0 ? <Badge tone="success">selected</Badge> : null}</td>
+                        <td>{formatNumber(model.validation_mae_mw, 3)} MW</td>
+                        <td>{formatNumber(model.mae_mw, 3)} MW</td>
+                        <td>+{formatNumber(model.skill_vs_persistence * 100)}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })}
+        </div>
+      </Panel>
+
+      <Panel eyebrow="Challengers" title="Evaluados, pero no recomendados para promoción">
+        <div className="challenger-review-grid">
+          {data.challengers.map((model) => (
+            <article key={`challenger-${model.technology}`}>
+              <div><Badge tone="neutral">rank 02</Badge><span>{model.technology}</span></div>
+              <h3>{model.model.replaceAll("_", " ")}</h3>
+              <p>
+                MAE de validación {formatNumber(model.validation_mae_mw, 3)} MW ·{" "}
+                <strong>+{formatNumber(model.validation_delta_percent ?? 0, 2)}%</strong> frente al
+                champion.
+              </p>
+              <div className="gate-list">
+                <span><CheckCircle2 size={14} /> Entrenado y medido</span>
+                <span><CheckCircle2 size={14} /> Resultado conservado en MLflow</span>
+                <span className="gate-hold"><BrainCircuit size={14} /> No se promueve: pierde en la métrica de selección</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </Panel>
+
+      <Panel eyebrow="Trazabilidad" title="Dataset, runtime y ejecución">
+        <div className="evidence-ledger">
+          <div><span>Run de entrenamiento</span><strong>{evidence.run.training_run_id}</strong></div>
+          <div><span>Commit del entrenamiento</span><strong>{shortHash(evidence.run.training_code_commit)}</strong></div>
+          <div><span>Dataset SHA-256</span><strong>{shortHash(evidence.dataset.content_hash)}</strong></div>
+          <div><span>Ventana temporal</span><strong>{evidence.dataset.min_timestamp?.slice(0, 10)} → {evidence.dataset.max_timestamp?.slice(0, 10)}</strong></div>
+          <div><span>Runtime</span><strong>Python {evidence.runtime.python} · sklearn {evidence.runtime.scikit_learn}</strong></div>
+          <div><span>Datos</span><strong>{evidence.dataset.contains_synthetic_data ? "SCADA sintético reproducible" : "Datos operativos"}</strong></div>
+        </div>
+      </Panel>
+
       <Panel eyebrow="Historial de despliegue" title="Auditoría de modelos">
         <div className="audit-list">
           {data.audit.map((event) => (

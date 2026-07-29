@@ -21,7 +21,7 @@ recurso cloud declarado pero no ejecutado no cuenta como ejecución remota.
 | 11 | Sí | Reglas físicas, residuos e Isolation Forest con severidad, causa, recomendación y MWh/€ en riesgo. |
 | 12 | Sí | ELPV real: 2.624 imágenes, HOG/LBP/textura, cinco candidatos, calibración, test de 525 imágenes y slices mono/poly. |
 | 13 | Sí | MLflow local SQLite recibió los diez candidatos de la pasada final, métricas, parámetros, manifest, signature, input example y champions. |
-| 14 | Sí | Registry Champion/Challenger, selección por validación, gates, rollback y aprobación manual pendiente; no hay autopromoción. |
+| 14 | Sí | Registry Champion/Challenger, selección por validación, gates y rollback. Los champions de demo están aprobados mediante recibos ligados al SHA-256; cada reentrenamiento invalida la aprobación y no hay autopromoción. |
 | 15 | Sí | Nueve servicios Docker; healthchecks, Prometheus targets `up`, dashboard Grafana provisionado y Loki operativo. |
 | 16 | Sí | Next.js con 13 áreas, URL state, filtros, drill-down, CSV, responsive, tema dual y estados de carga/error/vacío. |
 | 17 | Sí | Seis workflows n8n importados y ejecutados con éxito; duración individual en `artifacts/verification/n8n-executions.json`. |
@@ -37,7 +37,7 @@ recurso cloud declarado pero no ejecutado no cuenta como ejecución remota.
 | 27 | Sí, con límite | Registry local/MLflow funciona; Unity Catalog Model Registry está implementado y la ausencia de ejecución remota está documentada. |
 | 28 | No — externo | AI/BI `.lvdash.json` y recurso bundle validan; publicar exige una cuenta Databricks autorizada. |
 | 29 | Sí | Pandas/PySpark 4.2 reconcilian agregados horarios con JDK 25 en test de integración. |
-| 30 | Sí | 42 Python/API + 1 Spark + 3 UI + 22 E2E responsive + 3 E2E live; lint, tipos, build, seguridad y runtime pasan. |
+| 30 | Sí | 45 Python/API/model + 1 Spark + 6 UI + 22 E2E responsive + 3 E2E live; lint, tipos, build, seguridad y runtime pasan. |
 | 31 | Sí | UI, manifests y documentación distinguen dato oficial, sintético, derivado, evaluación, simulación y recurso no desplegado. |
 
 ## Resultado medido
@@ -50,7 +50,7 @@ recurso cloud declarado pero no ejecutado no cuenta como ejecución remota.
 - Runtime: API 46,09 ms, dashboard 6,39 ms, n8n 3,05 ms, Grafana 1,86 ms y
   Prometheus 12,54 ms en la sonda local final; los nueve servicios requeridos
   estaban operativos.
-- Calidad: Ruff, Mypy sobre 22 módulos, ESLint, TypeScript y build Next.js
+- Calidad: Ruff, Mypy sobre 24 módulos, ESLint, TypeScript y build Next.js
   pasan. Pytest: 43 aprobadas, incluida la reconciliación Spark al declarar el
   JDK compatible. Playwright: 22 responsive y 3 live aprobadas.
 - Seguridad: pip-audit y Bandit no encuentran vulnerabilidades/hallazgos altos;

@@ -1,4 +1,4 @@
-.PHONY: bootstrap seed ingest-demo scale-data transform train serve dashboard test lint security sbom verify publish-snapshot demo services-up services-down n8n-import n8n-smoke databricks-auth databricks-bootstrap databricks-upload-demo databricks-validate databricks-deploy databricks-run databricks-export-snapshot
+.PHONY: bootstrap seed ingest-demo scale-data transform train serve dashboard test lint security sbom verify verify-models publish-snapshot demo services-up services-down n8n-import n8n-smoke databricks-auth databricks-bootstrap databricks-upload-demo databricks-validate databricks-deploy databricks-run databricks-export-snapshot
 
 bootstrap:
 	uv sync --extra dev --extra platform --extra cv
@@ -47,6 +47,9 @@ verify:
 	uv run python scripts/verify_environment.py
 	uv run python scripts/validate_n8n_workflows.py
 	docker compose config --quiet
+
+verify-models:
+	uv run renewableops verify-models
 
 publish-snapshot:
 	uv run renewableops publish

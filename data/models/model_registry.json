@@ -5,7 +5,7 @@
   "aliases": {
     "solar": {
       "model_name": "solar_forecast",
-      "scope": "evaluation_only",
+      "scope": "portfolio_demo_inference",
       "aliases": {
         "Champion": "random_forest",
         "Challenger": "extra_trees"
@@ -44,18 +44,24 @@
         "validation_folds": 3,
         "gap_hours": 24
       },
-      "promotion_status": "review_required",
+      "promotion_status": "approved",
       "approval": {
-        "status": "pending",
+        "status": "approved",
         "required": true,
+        "approver": "Alfonso Cifuentes",
+        "reviewed_at": "2026-07-29T20:17:05.250756+00:00",
+        "rationale": "Aprobación explícita del propietario para la demostración de portfolio tras revisar validación temporal, integridad del artefacto, inferencia de humo y limitaciones.",
+        "artifact_sha256": "sha256:4218f184e62102c8894292461da0faa3340cfc13427196dbcef6ebc518d6988c",
+        "evidence_hash": "sha256:718269b00978ae66eee50080e52bb4a3f3e0a479203d43c816f62b2001422320",
+        "receipt": "data/models/approvals/solar-random_forest-2026-07-29.json",
         "template": "governance/approvals/model-promotion-template.md"
       },
-      "deployment_status": "not_deployed",
+      "deployment_status": "approved_for_demo_inference",
       "rollback_alias": "Champion"
     },
     "wind": {
       "model_name": "wind_forecast",
-      "scope": "evaluation_only",
+      "scope": "portfolio_demo_inference",
       "aliases": {
         "Champion": "extra_trees",
         "Challenger": "random_forest"
@@ -94,13 +100,19 @@
         "validation_folds": 3,
         "gap_hours": 24
       },
-      "promotion_status": "review_required",
+      "promotion_status": "approved",
       "approval": {
-        "status": "pending",
+        "status": "approved",
         "required": true,
+        "approver": "Alfonso Cifuentes",
+        "reviewed_at": "2026-07-29T20:17:26.465436+00:00",
+        "rationale": "Aprobación explícita del propietario para la demostración de portfolio tras revisar validación temporal, integridad del artefacto, inferencia de humo y limitaciones.",
+        "artifact_sha256": "sha256:f0d79045ba39253df8c11dc2537f43c589238c39517b0ef2c8bfd889488f2e1d",
+        "evidence_hash": "sha256:2c4ca6abc00fd9871abb7b0ef49716cb35b046e0dbf03dc8d0bd8123cfc2a259",
+        "receipt": "data/models/approvals/wind-extra_trees-2026-07-29.json",
         "template": "governance/approvals/model-promotion-template.md"
       },
-      "deployment_status": "not_deployed",
+      "deployment_status": "approved_for_demo_inference",
       "rollback_alias": "Champion"
     }
   },

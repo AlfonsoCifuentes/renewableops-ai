@@ -96,6 +96,40 @@ docker compose config --quiet
 uv run python scripts/verify_environment.py
 ```
 
+## Demostrar que el machine learning funciona
+
+Los modelos no «aprenden» dentro del navegador ni cambian con cada visita. El
+aprendizaje es **batch y reproducible**: `run-demo` regenera features, entrena
+cinco algoritmos por tecnología, selecciona por MAE de validación temporal y
+evalúa una sola vez sobre los últimos 14 días, que no participan en la
+selección.
+
+La comprobación ejecutable carga los `.joblib`, valida el schema de 13 features,
+realiza una inferencia real, comprueba P10/P50/P90 y registra hashes:
+
+```powershell
+uv run renewableops verify-models
+```
+
+El resultado versionado está en `data/models/model_verification.json` y se
+presenta en la sección MLOps del dashboard junto a los runs de MLflow, el
+dataset, el commit, las métricas y los hashes de artefacto.
+
+La aprobación manual solo acepta el **Champion seleccionado y materializado**:
+
+```powershell
+uv run renewableops approve-model --technology solar --model random_forest `
+  --approver "Nombre Apellido" `
+  --reason "Validación temporal, artefacto, inferencia y limitaciones revisadas."
+```
+
+Cada aprobación genera un recibo inmutable en `data/models/approvals/`, queda
+ligada al SHA-256 exacto del artefacto y habilita la inferencia de FastAPI. Un
+nuevo entrenamiento cambia el hash y vuelve a exigir revisión. Los challengers
+solar ExtraTrees y eólico RandomForest están entrenados y registrados, pero no
+se promocionan porque su MAE de validación es respectivamente 1,05 % y 1,31 %
+peor que el Champion.
+
 Las pruebas PySpark se activan con `uv sync --extra platform` y un JDK compatible
 declarado en `JAVA_HOME`; si no están disponibles, se omiten explícitamente. Los
 tests E2E requieren:

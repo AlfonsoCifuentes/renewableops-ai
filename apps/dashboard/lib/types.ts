@@ -106,12 +106,123 @@ export interface Champion extends ModelMetric {
   alias: string;
   stage: string;
   approved_by: string;
+  approval_status?: "approved" | "pending" | "not_requested";
+  approval_reviewed_at?: string | null;
+  approval_evidence_hash?: string | null;
+  artifact_sha256?: string | null;
+  artifact_size_bytes?: number | null;
+  estimator_class?: string | null;
+  fitted_tree_count?: number | null;
+  smoke_inference?: {
+    status: string;
+    point_prediction_mw: number;
+    served_quantiles_mw: {
+      p10: number;
+      p50: number;
+      p90: number;
+    };
+  } | null;
+  selection_rank?: number;
+  validation_delta_percent?: number;
   drift_status: string;
   drift_max_psi?: number | null;
   feature_drift?: Record<string, number>;
   target_psi?: number | null;
   prediction_psi?: number | null;
   trained_at: string;
+}
+
+export interface MlEvidence {
+  schema_version: string;
+  generated_at: string;
+  status: string;
+  run: {
+    training_run_id?: string | null;
+    training_code_commit?: string | null;
+    verification_code_commit?: string | null;
+    registry_generated_at?: string | null;
+  };
+  learning: {
+    mode: string;
+    online_learning: boolean;
+    automatic_retraining: boolean;
+    selection_metric: string;
+    test_used_for_selection: boolean;
+    validation_folds: number;
+    validation_gap_hours: number;
+    blocked_test_days: number;
+    candidate_count: number;
+    algorithm_count: number;
+    algorithms: string[];
+    reproduce_command: string;
+    verify_command: string;
+  };
+  dataset: {
+    manifest: string;
+    dataset_id?: string | null;
+    version?: string | null;
+    row_count?: number | null;
+    min_timestamp?: string | null;
+    max_timestamp?: string | null;
+    content_hash?: string | null;
+    schema_hash?: string | null;
+    quality_status?: string | null;
+    contains_synthetic_data?: boolean | null;
+  };
+  runtime: {
+    python: string;
+    scikit_learn: string;
+    pandas: string;
+    numpy: string;
+  };
+  tracking: {
+    status: string;
+    backend: string;
+    experiment: string;
+    runs: number;
+    note: string;
+  };
+  artifacts: {
+    technology: "solar" | "wind";
+    model: string;
+    alias: string;
+    file: string;
+    sha256: string;
+    size_bytes: number;
+    estimator_class: string;
+    hyperparameters: Record<string, string | number | boolean | null>;
+    fitted_tree_count?: number | null;
+    feature_count: number;
+    features: string[];
+    trained_until: string;
+    seed: number;
+    validation: {
+      method: string;
+      folds: number;
+      gap_hours: number;
+      selection_metric: string;
+      selection_score: number;
+      test_is_untouched_for_selection: boolean;
+    };
+    smoke_inference: {
+      status: string;
+      input_row_sha256: string;
+      point_prediction_mw: number;
+      raw_quantiles_mw: Record<"p10" | "p50" | "p90", number>;
+      served_quantiles_mw: Record<"p10" | "p50" | "p90", number>;
+    };
+    approval: {
+      status: string;
+      approver?: string | null;
+      reviewed_at?: string | null;
+      evidence_hash?: string | null;
+      scope: string;
+    };
+  }[];
+  checks: {
+    id: string;
+    passed: boolean;
+  }[];
 }
 
 export interface MarketPoint {
@@ -239,6 +350,7 @@ export interface DashboardSnapshot {
   model_metrics: ModelMetric[];
   champions: Champion[];
   challengers: Champion[];
+  ml_evidence: MlEvidence;
   drift: {
     generated_at?: string;
     method?: string;

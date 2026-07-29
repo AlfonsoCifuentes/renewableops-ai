@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0.0",
+  "decision": "approve",
+  "scope": "portfolio_demo_inference",
+  "technology": "solar",
+  "model": "random_forest",
+  "alias": "Champion",
+  "approver": "Alfonso Cifuentes",
+  "rationale": "Aprobación explícita del propietario para la demostración de portfolio tras revisar validación temporal, integridad del artefacto, inferencia de humo y limitaciones.",
+  "reviewed_at": "2026-07-29T20:17:05.250756+00:00",
+  "dataset": {
+    "manifest": "data/manifests/generation_silver.json",
+    "content_hash": "sha256:a3157e7fa0c9dacc6baf57c1a045d103d7766f1682a6cf89a5f83efbd3b18ae3",
+    "schema_hash": "76127ce15303e34d39cfd5a15a4544ac8d64d8b266149b4ab015ceaed3c3e84b",
+    "run_id": "run-20260729T103043Z-09cba632"
+  },
+  "artifact": {
+    "file": "data/models/solar_forecast_champion.joblib",
+    "sha256": "sha256:4218f184e62102c8894292461da0faa3340cfc13427196dbcef6ebc518d6988c",
+    "size_bytes": 3910344
+  },
+  "metrics": {
+    "technology": "solar",
+    "model": "random_forest",
+    "mae_mw": 0.8883,
+    "rmse_mw": 1.588,
+    "nmae": 0.0168,
+    "bias_mw": 0.0169,
+    "skill_vs_persistence": 0.6597,
+    "coverage_p10_p90": 0.9501,
+    "dataset_rows": 9960,
+    "test_rows": 1685,
+    "validation_mae_mw": 1.4125,
+    "nrmse": 0.03008,
+    "pinball_p10": 1.2645,
+    "pinball_p50": 0.4441,
+    "pinball_p90": 0.3143,
+    "interval_width_mw": 14.9793,
+    "quantile_crossing_rate": 0.0,
+    "validation_folds": 3,
+    "validation_gap_hours": 24
+  },
+  "gates": {
+    "positive_skill_vs_persistence": true,
+    "nmae_below_10_percent": true,
+    "interval_coverage_recorded": true,
+    "manual_approval_required": true
+  },
+  "limitations": [
+    "Synthetic SCADA portfolio; not validated on a real operating plant.",
+    "Approval covers portfolio demonstration inference, not autonomous control.",
+    "A new artifact hash or training run requires a new human approval."
+  ],
+  "evidence_hash": "sha256:718269b00978ae66eee50080e52bb4a3f3e0a479203d43c816f62b2001422320"
+}

@@ -1,7 +1,7 @@
 {
   "snapshot_version": "1.0.0",
-  "generated_at": "2026-07-29T10:54:40.743550+00:00",
-  "pipeline_run_id": "snapshot-20260729T105440Z-e92902ed",
+  "generated_at": "2026-07-29T20:17:27.352873+00:00",
+  "pipeline_run_id": "snapshot-20260729T201726Z-9e5e611a",
   "data_status": "valid",
   "is_demo": true,
   "contains_synthetic_data": true,
@@ -12,17 +12,18 @@
     "SCADA simulator"
   ],
   "files": {
-    "dashboard.json": "sha256:057975fcfee8e8d5288d41ba4b2c1a58b187aa269c751ca9d72bd057d1000345",
-    "overview.json": "sha256:2907de9ad92ae50009e5dcc0e6ab785e8e2861e7a4f4d6f215d0b11e0f6024db",
+    "dashboard.json": "sha256:a9d8bccfce856da3655df1d3f08d7295da2fcdfe93ab23a274f23216d4b4bb20",
+    "overview.json": "sha256:5e55cf1de0e0e6e52cea3fa61a5ad6b106865bb7814f32212b1a6465ceb95c4b",
     "assets.json": "sha256:7a3a8332ebd5a25001602ba37e1d0e935c2124ce02fc97e912a58f87eb4efa8d",
     "forecasts.json": "sha256:b213962bfe3f71baadb3a4b46550e5c85a5527f299d17e70ea6933c57846f6d5",
     "anomalies.json": "sha256:ec3db4d2f3724bfbf44bd7d897e6716e1fa29bb6f1cbe2c161129554b5f6305d",
     "market.json": "sha256:59994df1e71077a60bee60d42fd46ad0f93439f76cc83b57872607e2c78e72d9",
-    "model-health.json": "sha256:1e4c4938dccbe188cca24e2d1e30a4346e747c47411432bf06f73e0e43dfbdfd",
-    "data-quality.json": "sha256:50d32f55536b62f494bf1a824e5b21b99d92d2438eeb57f68bb175a879f0debd",
+    "model-health.json": "sha256:de1293372940577d14d0053a94b5d94c4998bf40d5ae5c25c869d7dbf7daa3de",
+    "model-evidence.json": "sha256:fefbe79734d281578a4d2930948cf740d940dfb1d36e22cdb99b90d554f33a62",
+    "data-quality.json": "sha256:287ee10a4299b0f1084ef066d3cae640ac7b06e0f04de00051eeddb51acd4906",
     "inspections.json": "sha256:14f6b626c0fe16474335081b6047554d7d610861dc997377fb526f64052ddbf9",
-    "sources.json": "sha256:53dc19cc40c1f4270e8cfbc67b2a8bc9c40e0ae9b8d472bf7584b01222418fdb",
-    "system-health.json": "sha256:561d13fe26bb0018ae739ce6b48e00d4aa6a0676c97844f7ce6cb3f05a4d7d23",
+    "sources.json": "sha256:8c3d38ac97770b5f0bf158550dc32326b31f31bea28d252808e5ee6376c70f66",
+    "system-health.json": "sha256:227392413160d0c516ddf39f72ebef181916e7aef5383cf119282c53533b8c39",
     "governance.json": "sha256:7e1e852a467033c40d2ca5c9a9e8a6fa0cd91eadfc288212feb6a56ba1cb66de"
   }
 }

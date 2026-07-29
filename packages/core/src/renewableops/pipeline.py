@@ -15,6 +15,7 @@ import pandas as pd
 
 from .audit import append_event
 from .config import LAKEHOUSE_DIR, MANIFEST_DIR, PROJECT_ROOT, ensure_directories
+from .model_evidence import write_model_verification
 from .modeling import ModelMetrics, train_forecasters
 from .monitoring import compute_drift_report
 from .registry import mirror_metrics_to_mlflow, write_registry
@@ -126,6 +127,14 @@ def run_demo_pipeline(*, days: int = 90) -> dict[str, Any]:
         correlation_id=correlation_id,
         metadata={"rows": len(silver), "synthetic": True},
     )
+    for dataset_id, path, frame in (
+        ("synthetic_scada_bronze", bronze_path, bronze),
+        ("generation_silver", silver_path, silver),
+    ):
+        manifest = _manifest(dataset_id, path, frame, run_id=correlation_id)
+        (MANIFEST_DIR / f"{dataset_id}.json").write_text(
+            json.dumps(manifest, indent=2), encoding="utf-8"
+        )
     predictions, metrics = train_forecasters(silver)
     drift_report = compute_drift_report(silver, predictions)
     registry_path = write_registry(
@@ -137,8 +146,19 @@ def run_demo_pipeline(*, days: int = 90) -> dict[str, Any]:
         metrics,
         dataset_manifest="data/manifests/generation_silver.json",
     )
+    model_verification = write_model_verification()
     gold_path = LAKEHOUSE_DIR / "gold" / "forecast_evaluation.parquet"
     predictions.to_parquet(gold_path, index=False, compression="zstd")
+    gold_manifest = _manifest(
+        "forecast_evaluation_gold",
+        gold_path,
+        predictions.assign(source_id="sklearn", is_synthetic=True),
+        run_id=correlation_id,
+    )
+    (MANIFEST_DIR / "forecast_evaluation_gold.json").write_text(
+        json.dumps(gold_manifest, indent=2),
+        encoding="utf-8",
+    )
     cv_metrics = train_cv_baseline()
     append_event(
         audit_path,
@@ -168,19 +188,6 @@ def run_demo_pipeline(*, days: int = 90) -> dict[str, Any]:
         correlation_id=correlation_id,
         metadata={"public_demo": True},
     )
-    for dataset_id, path, frame in (
-        ("synthetic_scada_bronze", bronze_path, bronze),
-        ("generation_silver", silver_path, silver),
-        (
-            "forecast_evaluation_gold",
-            gold_path,
-            predictions.assign(source_id="sklearn", is_synthetic=True),
-        ),
-    ):
-        manifest = _manifest(dataset_id, path, frame, run_id=correlation_id)
-        (MANIFEST_DIR / f"{dataset_id}.json").write_text(
-            json.dumps(manifest, indent=2), encoding="utf-8"
-        )
     return {
         "rows": len(silver),
         "assets": silver["asset_id"].nunique(),
@@ -189,6 +196,7 @@ def run_demo_pipeline(*, days: int = 90) -> dict[str, Any]:
         "audit_event_id": snapshot_event.event_id,
         "model_registry": str(registry_path),
         "mlflow_mirrored": mlflow_mirrored,
+        "model_verification": model_verification["status"],
         "drift": drift_report,
     }
 
@@ -223,6 +231,7 @@ def refresh_public_snapshot() -> dict[str, Any]:
     cv_payload: object = json.loads(required["cv"].read_text(encoding="utf-8"))
     if not isinstance(cv_payload, dict):
         raise ValueError("cv_metrics.json must contain an object")
+    model_verification = write_model_verification()
     dashboard = build_dashboard_snapshot(
         telemetry,
         predictions,
@@ -247,4 +256,5 @@ def refresh_public_snapshot() -> dict[str, Any]:
         "pipeline_run_id": correlation_id,
         "snapshot_manifest": str(manifest_path),
         "audit_event_id": event.event_id,
+        "model_verification": model_verification["status"],
     }

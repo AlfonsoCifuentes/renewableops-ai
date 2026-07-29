@@ -73,7 +73,7 @@ test("mobile navigation remains usable", async ({ page }) => {
   await page.getByRole("button", { name: "Abrir navegación" }).click();
   await page.getByRole("button", { name: "MLOps" }).click();
   await expect(page).toHaveURL(/\/mlops/);
-  await expect(page.getByRole("heading", { name: "Modelos con criterio de promoción." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "El entrenamiento deja pruebas." })).toBeVisible();
 });
 
 test("source provenance exposes only verified evidence", async ({ page }) => {
@@ -145,10 +145,13 @@ test("governance reports evidence instead of certification scores", async ({ pag
   await expect(page.getByText("12/12")).toHaveCount(0);
 });
 
-test("model page exposes temporal selection, drift, and pending approval", async ({ page }) => {
+test("model page proves training, inference, ranking, and approval evidence", async ({ page }) => {
   await page.goto("/mlops");
-  await expect(page.getByText(/3 folds temporales · gap 24 h/).first()).toBeVisible();
-  await expect(page.getByText("Pending manual approval").first()).toBeVisible();
-  await expect(page.getByText("Drift PSI").first()).toBeVisible();
-  await expect(page.getByRole("button", { name: "No desplegado" }).first()).toBeDisabled();
+  await expect(page.getByRole("heading", { name: "El entrenamiento deja pruebas." })).toBeVisible();
+  await expect(page.getByText("12/12 checks")).toBeVisible();
+  await expect(page.getByText(/\d+ runs/)).toBeVisible();
+  await expect(page.getByText("Se reentrena; no aprende en el navegador.")).toBeVisible();
+  await expect(page.getByText("Alfonso Cifuentes · demo inference").first()).toBeVisible();
+  await expect(page.getByText(/No se promueve: pierde en la métrica de selección/).first()).toBeVisible();
+  await expect(page.getByText(/4218f184e6/).first()).toBeVisible();
 });

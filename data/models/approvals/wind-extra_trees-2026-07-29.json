@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0.0",
+  "decision": "approve",
+  "scope": "portfolio_demo_inference",
+  "technology": "wind",
+  "model": "extra_trees",
+  "alias": "Champion",
+  "approver": "Alfonso Cifuentes",
+  "rationale": "Aprobación explícita del propietario para la demostración de portfolio tras revisar validación temporal, integridad del artefacto, inferencia de humo y limitaciones.",
+  "reviewed_at": "2026-07-29T20:17:26.465436+00:00",
+  "dataset": {
+    "manifest": "data/manifests/generation_silver.json",
+    "content_hash": "sha256:a3157e7fa0c9dacc6baf57c1a045d103d7766f1682a6cf89a5f83efbd3b18ae3",
+    "schema_hash": "76127ce15303e34d39cfd5a15a4544ac8d64d8b266149b4ab015ceaed3c3e84b",
+    "run_id": "run-20260729T103043Z-09cba632"
+  },
+  "artifact": {
+    "file": "data/models/wind_forecast_champion.joblib",
+    "sha256": "sha256:f0d79045ba39253df8c11dc2537f43c589238c39517b0ef2c8bfd889488f2e1d",
+    "size_bytes": 6997580
+  },
+  "metrics": {
+    "technology": "wind",
+    "model": "extra_trees",
+    "mae_mw": 2.661,
+    "rmse_mw": 4.1586,
+    "nmae": 0.03766,
+    "bias_mw": 0.2928,
+    "skill_vs_persistence": 0.845,
+    "coverage_p10_p90": 0.8368,
+    "dataset_rows": 9960,
+    "test_rows": 1685,
+    "validation_mae_mw": 3.436,
+    "nrmse": 0.05744,
+    "pinball_p10": 0.6977,
+    "pinball_p50": 1.3305,
+    "pinball_p90": 0.6615,
+    "interval_width_mw": 12.1586,
+    "quantile_crossing_rate": 0.0,
+    "validation_folds": 3,
+    "validation_gap_hours": 24
+  },
+  "gates": {
+    "positive_skill_vs_persistence": true,
+    "nmae_below_10_percent": true,
+    "interval_coverage_recorded": true,
+    "manual_approval_required": true
+  },
+  "limitations": [
+    "Synthetic SCADA portfolio; not validated on a real operating plant.",
+    "Approval covers portfolio demonstration inference, not autonomous control.",
+    "A new artifact hash or training run requires a new human approval."
+  ],
+  "evidence_hash": "sha256:2c4ca6abc00fd9871abb7b0ef49716cb35b046e0dbf03dc8d0bd8123cfc2a259"
+}

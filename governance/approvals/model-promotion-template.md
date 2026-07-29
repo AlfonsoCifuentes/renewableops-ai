@@ -2,15 +2,20 @@
 
 - Model / version:
 - Candidate alias:
+- Artifact SHA-256 / size:
+- Smoke inference status:
 - Dataset manifest and hash:
 - Temporal window:
+- Selection rank / validation delta:
 - Baseline and skill:
 - nMAE / bias / interval coverage:
 - Regime and subgroup review:
 - Security / robustness review:
 - Model card version:
 - Rollback target:
+- Approval scope:
 - Decision: approve / reject / hold
 - Approver:
 - Rationale:
 - Timestamp:
+- Approval evidence SHA-256:
