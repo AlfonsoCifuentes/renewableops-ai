@@ -1059,103 +1059,169 @@ kbd {
   content: "·";
 }
 
-.spain-shape {
+.spain-map {
   position: absolute;
-  inset: 23px 2% 22px;
-  width: 96%;
-  height: calc(100% - 45px);
-  opacity: 0.95;
+  inset: 30px 4px 27px;
+  width: calc(100% - 8px);
+  height: calc(100% - 57px);
+  overflow: visible;
 }
 
-.map-markers {
-  position: absolute;
-  inset: 0;
+.spain-fill-start {
+  stop-color: color-mix(in srgb, var(--canvas-raised) 76%, var(--sage));
 }
 
-.map-marker {
-  position: absolute;
-  z-index: 4;
-  display: grid;
-  width: 25px;
-  height: 25px;
-  place-items: center;
-  padding: 0;
-  border: 2px solid var(--paper);
-  border-radius: 50%;
-  background: var(--forest);
-  color: white;
-  box-shadow: 0 2px 8px rgba(19, 37, 29, 0.19);
-  transform: translate(-50%, -50%);
-  transition: transform 120ms ease, box-shadow 120ms ease;
+.spain-fill-end {
+  stop-color: color-mix(in srgb, var(--canvas-raised) 92%, var(--sage));
 }
 
-.map-marker:hover,
-.map-marker:focus-visible,
-.map-marker.is-selected {
-  z-index: 8;
-  transform: translate(-50%, -50%) scale(1.16);
-  box-shadow: 0 3px 13px rgba(19, 37, 29, 0.3);
+.spain-land {
+  stroke: color-mix(in srgb, var(--forest) 42%, var(--line));
+  stroke-linejoin: round;
+  stroke-width: 2.2;
 }
 
-.map-marker.has-alert::after {
-  position: absolute;
-  top: -3px;
-  right: -2px;
-  width: 7px;
-  height: 7px;
-  border: 1px solid var(--paper);
-  border-radius: 50%;
-  background: var(--rust);
-  content: "";
-}
-
-.marker-solar {
-  background: #aa8951;
-}
-
-.marker-wind {
-  background: #567d91;
-}
-
-.marker-battery {
-  background: var(--forest);
-}
-
-.marker-tooltip {
-  position: absolute;
-  bottom: 31px;
-  left: 50%;
-  display: none;
-  min-width: 135px;
-  padding: 7px 9px;
-  border-radius: 4px;
-  background: var(--sidebar);
-  color: white;
-  text-align: left;
-  transform: translateX(-50%);
-  box-shadow: var(--shadow-md);
+.spain-grid {
+  opacity: 0.48;
   pointer-events: none;
 }
 
-.marker-tooltip strong,
-.marker-tooltip small {
-  display: block;
-  white-space: nowrap;
+.spain-grid-line {
+  fill: none;
+  stroke: color-mix(in srgb, var(--line) 74%, transparent);
+  stroke-width: 0.8;
 }
 
-.marker-tooltip strong {
-  font-size: 9px;
+.spain-coordinate-lines {
+  fill: none;
+  stroke: color-mix(in srgb, var(--forest) 18%, transparent);
+  stroke-dasharray: 3 7;
+  stroke-width: 0.8;
+  pointer-events: none;
 }
 
-.marker-tooltip small {
-  margin-top: 3px;
-  color: #aab6af;
-  font-size: 7.5px;
+.map-water-labels {
+  fill: color-mix(in srgb, var(--faint) 66%, transparent);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
 }
 
-.map-marker:hover .marker-tooltip,
-.map-marker:focus-visible .marker-tooltip {
-  display: block;
+.map-marker-svg {
+  --marker-color: var(--forest);
+  cursor: pointer;
+  outline: none;
+}
+
+.marker-solar {
+  --marker-color: #a8874d;
+}
+
+.marker-wind {
+  --marker-color: #527b8e;
+}
+
+.marker-battery {
+  --marker-color: var(--forest);
+}
+
+.map-marker-leader {
+  stroke: color-mix(in srgb, var(--marker-color) 72%, var(--paper));
+  stroke-dasharray: 2 2.5;
+  stroke-linecap: round;
+  stroke-width: 1.1;
+  pointer-events: none;
+}
+
+.map-coordinate-anchor {
+  fill: var(--paper);
+  stroke: var(--marker-color);
+  stroke-width: 1.8;
+  pointer-events: none;
+}
+
+.map-marker-halo {
+  fill: color-mix(in srgb, var(--marker-color) 19%, transparent);
+  opacity: 0;
+  transition: opacity 130ms ease;
+  pointer-events: none;
+}
+
+.map-marker-core {
+  fill: var(--marker-color);
+  stroke: var(--paper);
+  stroke-width: 2.4;
+  filter: drop-shadow(0 2px 3px rgba(19, 37, 29, 0.24));
+  transition: filter 130ms ease, stroke-width 130ms ease;
+}
+
+.map-marker-button > svg {
+  color: white;
+  pointer-events: none;
+}
+
+.map-marker-svg:hover .map-marker-halo,
+.map-marker-svg:focus-visible .map-marker-halo,
+.map-marker-svg.is-selected .map-marker-halo {
+  opacity: 1;
+}
+
+.map-marker-svg:hover .map-marker-core,
+.map-marker-svg:focus-visible .map-marker-core,
+.map-marker-svg.is-selected .map-marker-core {
+  stroke-width: 3.4;
+  filter: drop-shadow(0 3px 5px rgba(19, 37, 29, 0.32));
+}
+
+.map-marker-svg:focus-visible .map-marker-halo {
+  stroke: var(--forest);
+  stroke-dasharray: 2 2;
+  stroke-width: 1.5;
+}
+
+.map-marker-alert {
+  fill: var(--rust);
+  stroke: var(--paper);
+  stroke-width: 1.5;
+  pointer-events: none;
+}
+
+.map-svg-tooltip {
+  pointer-events: none;
+}
+
+.map-svg-tooltip rect {
+  fill: var(--sidebar);
+  filter: drop-shadow(0 4px 6px rgba(19, 37, 29, 0.22));
+}
+
+.map-svg-tooltip text {
+  font-family: var(--font-sans);
+}
+
+.map-tooltip-name {
+  fill: white;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.map-tooltip-detail {
+  fill: #aab6af;
+  font-family: var(--font-mono) !important;
+  font-size: 8.5px;
+}
+
+.map-source {
+  position: absolute;
+  z-index: 3;
+  bottom: 11px;
+  left: 12px;
+  color: var(--faint);
+  font-family: var(--font-mono);
+  font-size: 6.5px;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
 }
 
 .map-legend {
