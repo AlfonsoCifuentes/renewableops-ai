@@ -1,26 +1,28 @@
 {
   "snapshot_version": "1.0.0",
-  "generated_at": "2026-07-28T00:00:00+00:00",
-  "pipeline_run_id": "run-20260728-0600-demo",
+  "generated_at": "2026-07-29T10:54:40.743550+00:00",
+  "pipeline_run_id": "snapshot-20260729T105440Z-e92902ed",
   "data_status": "valid",
   "is_demo": true,
   "contains_synthetic_data": true,
   "sources": [
-    "REData",
-    "AEMET",
-    "PVGIS",
-    "synthetic_scada"
+    "REData API",
+    "PVGIS API",
+    "Eurostat renewable energy indicators",
+    "SCADA simulator"
   ],
   "files": {
-    "dashboard.json": "sha256:1461f9f1cf911bfa3cdad3885b5bcbe7e4ed84c1c42d21545b9ce7839d2f1b7a",
-    "overview.json": "sha256:a6639cd6b231f06d4a4c5a1401856e45b5303f6261b8de3d80fd757fa29d0d9e",
+    "dashboard.json": "sha256:057975fcfee8e8d5288d41ba4b2c1a58b187aa269c751ca9d72bd057d1000345",
+    "overview.json": "sha256:2907de9ad92ae50009e5dcc0e6ab785e8e2861e7a4f4d6f215d0b11e0f6024db",
     "assets.json": "sha256:7a3a8332ebd5a25001602ba37e1d0e935c2124ce02fc97e912a58f87eb4efa8d",
-    "forecasts.json": "sha256:0dfac17da6ec25d678593c8cb7c5d7e271e94d3d328ff9a36ec735df5e2cd1e9",
+    "forecasts.json": "sha256:b213962bfe3f71baadb3a4b46550e5c85a5527f299d17e70ea6933c57846f6d5",
     "anomalies.json": "sha256:ec3db4d2f3724bfbf44bd7d897e6716e1fa29bb6f1cbe2c161129554b5f6305d",
     "market.json": "sha256:59994df1e71077a60bee60d42fd46ad0f93439f76cc83b57872607e2c78e72d9",
-    "model-health.json": "sha256:1abf82d1385533ac52826a01f8c1f471317f08c0362146fcbe8b35b675bdc53c",
-    "data-quality.json": "sha256:2f925965deb66ac8abfa6f2708b442cf2f8e23ace27d4c3107f6e7953b28357f",
+    "model-health.json": "sha256:1e4c4938dccbe188cca24e2d1e30a4346e747c47411432bf06f73e0e43dfbdfd",
+    "data-quality.json": "sha256:50d32f55536b62f494bf1a824e5b21b99d92d2438eeb57f68bb175a879f0debd",
     "inspections.json": "sha256:14f6b626c0fe16474335081b6047554d7d610861dc997377fb526f64052ddbf9",
-    "system-health.json": "sha256:c2cdd2edc341001a760e1d6c3c6ea42259da9588a4e04a24053bad47d311b53d"
+    "sources.json": "sha256:53dc19cc40c1f4270e8cfbc67b2a8bc9c40e0ae9b8d472bf7584b01222418fdb",
+    "system-health.json": "sha256:561d13fe26bb0018ae739ce6b48e00d4aa6a0676c97844f7ce6cb3f05a4d7d23",
+    "governance.json": "sha256:7e1e852a467033c40d2ca5c9a9e8a6fa0cd91eadfc288212feb6a56ba1cb66de"
   }
 }

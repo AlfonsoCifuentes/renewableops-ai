@@ -1,0 +1,190 @@
+{
+  "source_id": "eurostat_renewables",
+  "requested_url": "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/nrg_ind_ren?lang=EN&geo=ES&time=2024",
+  "status_code": 200,
+  "extracted_at": "2026-07-29T09:31:05.452328+00:00",
+  "source_updated_at": "2026-07-14T11:00:00+0200",
+  "payload_checksum_sha256": "86b30dfc06f4e2cfca710c0c9e5e156c5b8d8ae08a76c7e64702e85d58e59408",
+  "schema_fingerprint_sha256": "76da895e167acbb9a7b99a9ce2684e505c9667264db74d1f243f3c6324e07ee8",
+  "request_id": "af956ccd-987c-468b-8f9a-a96056ad5072",
+  "run_id": "ingest-20260729T093102Z-8de154f4",
+  "response_headers": {
+    "content-type": "application/json"
+  },
+  "attribution": "Eurostat dataset nrg_ind_ren",
+  "license_notes": "Reuse under the Eurostat reuse policy with source attribution",
+  "payload": {
+    "version": "2.0",
+    "class": "dataset",
+    "label": "Main indicators - share of renewable energy",
+    "source": "ESTAT",
+    "updated": "2026-07-14T11:00:00+0200",
+    "value": {
+      "0": 25.417,
+      "2": 59.673,
+      "3": 21.572,
+      "4": 21.618,
+      "1": 11.298,
+      "5": 82.0
+    },
+    "id": [
+      "freq",
+      "nrg_bal",
+      "unit",
+      "geo",
+      "time"
+    ],
+    "size": [
+      1,
+      6,
+      1,
+      1,
+      1
+    ],
+    "dimension": {
+      "freq": {
+        "label": "Time frequency",
+        "category": {
+          "index": {
+            "A": 0
+          },
+          "label": {
+            "A": "Annual"
+          }
+        }
+      },
+      "nrg_bal": {
+        "label": "Energy balance",
+        "category": {
+          "index": {
+            "REN": 0,
+            "REN_TRA": 1,
+            "REN_ELC": 2,
+            "REN_HEAT_CL": 3,
+            "REN_HEAT_CL_WHC": 4,
+            "REN_WHC_DHEAT_DCL": 5
+          },
+          "label": {
+            "REN": "Renewable energy - overall",
+            "REN_TRA": "Renewable energy - transport",
+            "REN_ELC": "Renewable energy - electricity",
+            "REN_HEAT_CL": "Renewable energy - heating and cooling",
+            "REN_HEAT_CL_WHC": "Renewable energy - heating and cooling - waste heat and cold",
+            "REN_WHC_DHEAT_DCL": "Renewable energy and waste heat and cold - district heating and cooling"
+          }
+        }
+      },
+      "unit": {
+        "label": "Unit of measure",
+        "category": {
+          "index": {
+            "PC": 0
+          },
+          "label": {
+            "PC": "Percentage"
+          }
+        }
+      },
+      "geo": {
+        "label": "Geopolitical entity (reporting)",
+        "category": {
+          "index": {
+            "ES": 0
+          },
+          "label": {
+            "ES": "Spain"
+          }
+        }
+      },
+      "time": {
+        "label": "Time",
+        "category": {
+          "index": {
+            "2024": 0
+          },
+          "label": {
+            "2024": "2024"
+          }
+        }
+      }
+    },
+    "extension": {
+      "lang": "EN",
+      "id": "NRG_IND_REN",
+      "agencyId": "ESTAT",
+      "version": "1.0",
+      "datastructure": {
+        "id": "NRG_IND_REN",
+        "agencyId": "ESTAT",
+        "version": "58.0"
+      },
+      "annotation": [
+        {
+          "type": "CREATED",
+          "date": "2019-02-07T16:18:53+0100"
+        },
+        {
+          "type": "DISSEMINATION_DOI_XML",
+          "title": "<adms:identifier xmlns:adms=\"http://www.w3.org/ns/adms#\" xmlns:skos=\"http://www.w3.org/2004/02/skos/core.html\" xmlns:dct=\"http://purl.org/dc/terms/\" xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\"><adms:Identifier rdf:about=\"https://doi.org/10.2908/NRG_IND_REN\"><skos:notation rdf:datatype=\"http://purl.org/spar/datacite/doi\">10.2908/NRG_IND_REN</skos:notation><dct:creator rdf:resource=\"http://publications.europa.eu/resource/authority/corporate-body/ESTAT\"/><dct:issued rdf:datatype=\"http://www.w3.org/2001/XMLSchema#date\">2023-01-23</dct:issued></adms:Identifier></adms:identifier>"
+        },
+        {
+          "type": "DISSEMINATION_OBJECT_TYPE",
+          "title": "DATASET"
+        },
+        {
+          "type": "DISSEMINATION_TIMESTAMP_DATA",
+          "date": "2026-07-14T11:00:00+0200"
+        },
+        {
+          "type": "DISSEMINATION_TIMESTAMP_GLOBAL",
+          "date": "2026-07-14T11:00:00+0200"
+        },
+        {
+          "type": "DISSEMINATION_TIMESTAMP_PLANNED",
+          "date": "2026-07-14T11:00:00+0200"
+        },
+        {
+          "type": "ESMS_HTML",
+          "title": "Explanatory texts (metadata)",
+          "href": "https://ec.europa.eu/eurostat/cache/metadata/en/nrg_ind_share_esmsip2.htm"
+        },
+        {
+          "type": "ESMS_SDMX",
+          "title": "Explanatory texts (metadata)",
+          "href": "https://ec.europa.eu/eurostat/api/dissemination/files?file=metadata/nrg_ind_share_esmsip2.sdmx.zip"
+        },
+        {
+          "type": "OBS_COUNT",
+          "title": "3203"
+        },
+        {
+          "type": "OBS_PERIOD_OVERALL_LATEST",
+          "title": "2025"
+        },
+        {
+          "type": "OBS_PERIOD_OVERALL_OLDEST",
+          "title": "2004"
+        },
+        {
+          "type": "SOURCE_INSTITUTIONS",
+          "text": "Eurostat"
+        },
+        {
+          "type": "UPDATE_DATA",
+          "date": "2026-07-14T11:00:00+0200"
+        },
+        {
+          "type": "UPDATE_STRUCTURE",
+          "date": "2026-07-13T11:00:00+0200"
+        }
+      ],
+      "positions-with-no-data": {
+        "freq": [],
+        "nrg_bal": [],
+        "unit": [],
+        "geo": [],
+        "time": []
+      }
+    }
+  }
+}

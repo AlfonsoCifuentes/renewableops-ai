@@ -181,14 +181,12 @@ export function Overview({
           label="Previsión 24 h"
           value={`${formatInteger(data.kpis.forecast_24h_mwh)} MWh`}
           context="P50 del portfolio"
-          trend={3.8}
           icon={<Zap size={17} />}
         />
         <KpiCard
           label="Disponibilidad"
           value={`${formatNumber(data.kpis.availability)}%`}
           context={`${data.kpis.assets_online} de ${data.kpis.assets_total} online`}
-          trend={0.6}
           tone="good"
           icon={<Gauge size={17} />}
           onInfo={() => onDefinition("availability")}
@@ -197,7 +195,6 @@ export function Overview({
           label="MWh en riesgo"
           value={formatNumber(data.kpis.mwh_at_risk)}
           context={`${data.kpis.active_anomalies} incidencias activas`}
-          trend={-12.4}
           tone="warning"
           icon={<TriangleAlert size={17} />}
           onInfo={() => onDefinition("mwh_at_risk")}
@@ -206,14 +203,12 @@ export function Overview({
           label="Ingreso 7 días"
           value={formatCurrency(data.kpis.revenue_7d_eur)}
           context="Estimación day-ahead"
-          trend={5.2}
           icon={<CircleDollarSign size={17} />}
         />
         <KpiCard
           label="nMAE forecast"
           value={`${formatNumber(data.kpis.forecast_nmae)}%`}
           context="Champion · ventana 7 d"
-          trend={-1.9}
           tone="good"
           icon={<Activity size={17} />}
           onInfo={() => onDefinition("forecast_nmae")}

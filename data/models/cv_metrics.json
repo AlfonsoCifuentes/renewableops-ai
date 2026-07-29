@@ -1,8 +1,334 @@
 {
-  "model": "HOG + LBP + calibrated logistic regression",
-  "accuracy": 1.0,
-  "macro_f1": 1.0,
-  "train_images": 170,
-  "test_images": 50,
-  "data_origin": "synthetic texture benchmark"
+  "dataset": "ELPV",
+  "dataset_url": "https://github.com/zae-bayern/elpv-dataset",
+  "license": "CC BY-NC-SA 4.0 (images); Apache-2.0 (loader)",
+  "data_origin": "real public electroluminescence images",
+  "images": 2624,
+  "annotation_hash": "sha256:0abe6fe7700aea571717d7d7dfec005a47c6207b4cde26a4556b6807a115483d",
+  "task": "binary defective/functional at defect_probability >= 0.5",
+  "control_variable": "mono/poly cell type",
+  "group_split": "unavailable in distributed annotations; stratified type-aware split",
+  "model": "HOG + LBP + statistics + rbf_svc",
+  "champion": "rbf_svc",
+  "selection_metric": "validation macro F1",
+  "test_used_for_selection": false,
+  "feature_count": 1785,
+  "train_images": 1679,
+  "validation_images": 420,
+  "test_images": 525,
+  "accuracy": 0.7962,
+  "balanced_accuracy": 0.7337,
+  "macro_f1": 0.7467,
+  "expected_calibration_error": 0.0373,
+  "confusion_matrix": [
+    [
+      93,
+      71
+    ],
+    [
+      36,
+      325
+    ]
+  ],
+  "class_order": [
+    "defective",
+    "functional"
+  ],
+  "per_class": {
+    "defective": {
+      "precision": 0.7209,
+      "recall": 0.5671,
+      "f1": 0.6348,
+      "support": 164
+    },
+    "functional": {
+      "precision": 0.8207,
+      "recall": 0.9003,
+      "f1": 0.8587,
+      "support": 361
+    }
+  },
+  "pr_auc": 0.7354,
+  "roc_auc": 0.8254,
+  "brier_score": 0.1453,
+  "severe_defect_recall": 0.5671,
+  "candidate_validation": {
+    "calibrated_logistic_regression": {
+      "accuracy": 0.7405,
+      "balanced_accuracy": 0.6257,
+      "macro_f1": 0.6334,
+      "expected_calibration_error": 0.0333,
+      "confusion_matrix": [
+        [
+          42,
+          89
+        ],
+        [
+          20,
+          269
+        ]
+      ],
+      "class_order": [
+        "defective",
+        "functional"
+      ],
+      "per_class": {
+        "defective": {
+          "precision": 0.6774,
+          "recall": 0.3206,
+          "f1": 0.4352,
+          "support": 131
+        },
+        "functional": {
+          "precision": 0.7514,
+          "recall": 0.9308,
+          "f1": 0.8315,
+          "support": 289
+        }
+      },
+      "pr_auc": 0.6188,
+      "roc_auc": 0.7555,
+      "brier_score": 0.1748,
+      "severe_defect_recall": 0.3206
+    },
+    "calibrated_linear_svc": {
+      "accuracy": 0.7476,
+      "balanced_accuracy": 0.6246,
+      "macro_f1": 0.6312,
+      "expected_calibration_error": 0.04,
+      "confusion_matrix": [
+        [
+          39,
+          92
+        ],
+        [
+          14,
+          275
+        ]
+      ],
+      "class_order": [
+        "defective",
+        "functional"
+      ],
+      "per_class": {
+        "defective": {
+          "precision": 0.7358,
+          "recall": 0.2977,
+          "f1": 0.4239,
+          "support": 131
+        },
+        "functional": {
+          "precision": 0.7493,
+          "recall": 0.9516,
+          "f1": 0.8384,
+          "support": 289
+        }
+      },
+      "pr_auc": 0.6143,
+      "roc_auc": 0.7549,
+      "brier_score": 0.1758,
+      "severe_defect_recall": 0.2977
+    },
+    "rbf_svc": {
+      "accuracy": 0.7905,
+      "balanced_accuracy": 0.7246,
+      "macro_f1": 0.738,
+      "expected_calibration_error": 0.0139,
+      "confusion_matrix": [
+        [
+          72,
+          59
+        ],
+        [
+          29,
+          260
+        ]
+      ],
+      "class_order": [
+        "defective",
+        "functional"
+      ],
+      "per_class": {
+        "defective": {
+          "precision": 0.7129,
+          "recall": 0.5496,
+          "f1": 0.6207,
+          "support": 131
+        },
+        "functional": {
+          "precision": 0.815,
+          "recall": 0.8997,
+          "f1": 0.8553,
+          "support": 289
+        }
+      },
+      "pr_auc": 0.7187,
+      "roc_auc": 0.8316,
+      "brier_score": 0.1459,
+      "severe_defect_recall": 0.5496
+    },
+    "random_forest": {
+      "accuracy": 0.7881,
+      "balanced_accuracy": 0.6937,
+      "macro_f1": 0.7128,
+      "expected_calibration_error": 0.0485,
+      "confusion_matrix": [
+        [
+          58,
+          73
+        ],
+        [
+          16,
+          273
+        ]
+      ],
+      "class_order": [
+        "defective",
+        "functional"
+      ],
+      "per_class": {
+        "defective": {
+          "precision": 0.7838,
+          "recall": 0.4427,
+          "f1": 0.5659,
+          "support": 131
+        },
+        "functional": {
+          "precision": 0.789,
+          "recall": 0.9446,
+          "f1": 0.8598,
+          "support": 289
+        }
+      },
+      "pr_auc": 0.6768,
+      "roc_auc": 0.8283,
+      "brier_score": 0.1547,
+      "severe_defect_recall": 0.4427
+    },
+    "hist_gradient_boosting": {
+      "accuracy": 0.7905,
+      "balanced_accuracy": 0.7079,
+      "macro_f1": 0.7258,
+      "expected_calibration_error": 0.0765,
+      "confusion_matrix": [
+        [
+          64,
+          67
+        ],
+        [
+          21,
+          268
+        ]
+      ],
+      "class_order": [
+        "defective",
+        "functional"
+      ],
+      "per_class": {
+        "defective": {
+          "precision": 0.7529,
+          "recall": 0.4885,
+          "f1": 0.5926,
+          "support": 131
+        },
+        "functional": {
+          "precision": 0.8,
+          "recall": 0.9273,
+          "f1": 0.859,
+          "support": 289
+        }
+      },
+      "pr_auc": 0.7528,
+      "roc_auc": 0.8348,
+      "brier_score": 0.1489,
+      "severe_defect_recall": 0.4885
+    }
+  },
+  "slices_by_cell_type": {
+    "mono": {
+      "accuracy": 0.7953,
+      "balanced_accuracy": 0.7509,
+      "macro_f1": 0.7615,
+      "expected_calibration_error": 0.057,
+      "confusion_matrix": [
+        [
+          45,
+          29
+        ],
+        [
+          15,
+          126
+        ]
+      ],
+      "class_order": [
+        "defective",
+        "functional"
+      ],
+      "per_class": {
+        "defective": {
+          "precision": 0.75,
+          "recall": 0.6081,
+          "f1": 0.6716,
+          "support": 74
+        },
+        "functional": {
+          "precision": 0.8129,
+          "recall": 0.8936,
+          "f1": 0.8514,
+          "support": 141
+        }
+      },
+      "pr_auc": 0.7581,
+      "roc_auc": 0.8206,
+      "brier_score": 0.1527,
+      "severe_defect_recall": 0.6081
+    },
+    "poly": {
+      "accuracy": 0.7968,
+      "balanced_accuracy": 0.7189,
+      "macro_f1": 0.7336,
+      "expected_calibration_error": 0.0391,
+      "confusion_matrix": [
+        [
+          48,
+          42
+        ],
+        [
+          21,
+          199
+        ]
+      ],
+      "class_order": [
+        "defective",
+        "functional"
+      ],
+      "per_class": {
+        "defective": {
+          "precision": 0.6957,
+          "recall": 0.5333,
+          "f1": 0.6038,
+          "support": 90
+        },
+        "functional": {
+          "precision": 0.8257,
+          "recall": 0.9045,
+          "f1": 0.8633,
+          "support": 220
+        }
+      },
+      "pr_auc": 0.7383,
+      "roc_auc": 0.8313,
+      "brier_score": 0.1402,
+      "severe_defect_recall": 0.5333
+    }
+  },
+  "preprocessing": {
+    "grayscale": true,
+    "resize": [
+      64,
+      64
+    ],
+    "normalization": "statistics normalized to [0,1]; HOG L2-Hys",
+    "augmentation_before_split": false
+  }
 }

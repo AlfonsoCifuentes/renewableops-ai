@@ -23,6 +23,11 @@ export function Market({ data }: { data: DashboardSnapshot }) {
   const capturePrice =
     points.reduce((sum, point) => sum + point.price * point.generation, 0) /
     points.reduce((sum, point) => sum + point.generation, 0);
+  const captureRates = [
+    data.market_capture_rates.solar,
+    data.market_capture_rates.wind,
+    data.market_capture_rates.portfolio,
+  ];
   const priceOption: EChartsOption = {
     grid: { left: 48, right: 48, top: 26, bottom: 36 },
     tooltip: { trigger: "axis" },
@@ -62,11 +67,16 @@ export function Market({ data }: { data: DashboardSnapshot }) {
   };
   const captureOption: EChartsOption = {
     grid: { left: 90, right: 18, top: 8, bottom: 24 },
-    xAxis: { ...baseAxis, type: "value", max: 100, axisLabel: { formatter: "{value}%" } },
+    xAxis: {
+      ...baseAxis,
+      type: "value",
+      max: Math.max(100, Math.ceil(Math.max(...captureRates) / 10) * 10),
+      axisLabel: { formatter: "{value}%" },
+    },
     yAxis: { ...baseAxis, type: "category", data: ["Solar", "Eólica", "Portfolio"], splitLine: { show: false } },
     series: [{
       type: "bar",
-      data: [91.4, 104.2, 98.6],
+      data: captureRates,
       barWidth: 18,
       itemStyle: { color: (params: { dataIndex: number }) => [chartTheme.sand, chartTheme.blue, chartTheme.green][params.dataIndex], borderRadius: [0, 3, 3, 0] },
       label: { show: true, position: "right", formatter: "{c}%", color: chartTheme.ink, fontWeight: 600 },
@@ -81,10 +91,10 @@ export function Market({ data }: { data: DashboardSnapshot }) {
         description="Captura de valor, exposición horaria y relación entre generación renovable y mercado day-ahead."
       />
       <div className="kpi-grid kpi-grid-four">
-        <KpiCard label="Precio medio" value={`${formatNumber(averagePrice)} €/MWh`} context="Últimos 5 días" trend={4.2} icon={<CircleDollarSign size={17} />} />
-        <KpiCard label="Precio de captura" value={`${formatNumber(capturePrice)} €/MWh`} context="Portfolio renovable" trend={1.6} icon={<TrendingUp size={17} />} />
-        <KpiCard label="Horas negativas" value={`${negativeHours} h`} context="Ventana analizada" trend={-22} tone="good" icon={<TrendingDown size={17} />} />
-        <KpiCard label="Ingreso estimado" value={formatCurrency(data.kpis.revenue_7d_eur)} context="No es liquidación" trend={5.2} icon={<CloudSun size={17} />} />
+        <KpiCard label="Precio medio" value={`${formatNumber(averagePrice)} €/MWh`} context="Últimos 5 días" icon={<CircleDollarSign size={17} />} />
+        <KpiCard label="Precio de captura" value={`${formatNumber(capturePrice)} €/MWh`} context="Portfolio renovable" icon={<TrendingUp size={17} />} />
+        <KpiCard label="Horas negativas" value={`${negativeHours} h`} context="Ventana analizada" tone="good" icon={<TrendingDown size={17} />} />
+        <KpiCard label="Ingreso estimado" value={formatCurrency(data.kpis.revenue_7d_eur)} context="No es liquidación" icon={<CloudSun size={17} />} />
       </div>
       <Panel eyebrow="Serie combinada" title="Precio y generación">
         <Chart option={priceOption} height={360} ariaLabel="Precio day-ahead y generación renovable por hora" />

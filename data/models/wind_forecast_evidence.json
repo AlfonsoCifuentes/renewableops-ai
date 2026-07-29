@@ -1,0 +1,99 @@
+{
+  "technology": "wind",
+  "selected_model": "extra_trees",
+  "selected_on": "rolling temporal validation MAE",
+  "test_used_for_selection": false,
+  "validation": {
+    "method": "TimeSeriesSplit",
+    "folds": 3,
+    "gap_hours": 24,
+    "selection_metric": "MAE",
+    "selection_score": 3.436001055207789,
+    "test_is_untouched_for_selection": true
+  },
+  "baselines": {
+    "persistence_1h": {
+      "mae_mw": 8.412,
+      "rmse_mw": 11.8973
+    },
+    "same_hour_24h": {
+      "mae_mw": 17.1685,
+      "rmse_mw": 24.0417
+    },
+    "same_hour_168h": {
+      "mae_mw": 16.8111,
+      "rmse_mw": 23.2319
+    },
+    "hour_weekday_mean": {
+      "mae_mw": 12.9845,
+      "rmse_mw": 17.4321
+    },
+    "physical_expected_power": {
+      "mae_mw": 0.9677,
+      "rmse_mw": 2.874
+    }
+  },
+  "quantiles": {
+    "method": "three GradientBoostingRegressor models",
+    "alphas": [
+      0.1,
+      0.5,
+      0.9
+    ],
+    "raw_crossing_rate": 0.00178,
+    "presentation_repair": "row-wise monotonic sort then physical clipping"
+  },
+  "postprocessing": {
+    "bounds": "[0, installed_capacity_mw]",
+    "solar_night": "physical expected-power reference applied in future inference",
+    "raw_and_adjusted": true
+  },
+  "horizon_metrics": {
+    "scope": "first 48 hours of untouched blocked test",
+    "prediction": "trained P50 quantile model",
+    "buckets": [
+      {
+        "label": "0\u20136 h",
+        "start_hour": 1,
+        "end_hour": 6,
+        "mae_mw": 2.2768,
+        "observations": 35
+      },
+      {
+        "label": "7\u201312 h",
+        "start_hour": 7,
+        "end_hour": 12,
+        "mae_mw": 2.9975,
+        "observations": 30
+      },
+      {
+        "label": "13\u201318 h",
+        "start_hour": 13,
+        "end_hour": 18,
+        "mae_mw": 1.363,
+        "observations": 30
+      },
+      {
+        "label": "19\u201324 h",
+        "start_hour": 19,
+        "end_hour": 24,
+        "mae_mw": 1.5332,
+        "observations": 30
+      },
+      {
+        "label": "25\u201336 h",
+        "start_hour": 25,
+        "end_hour": 36,
+        "mae_mw": 3.5608,
+        "observations": 60
+      },
+      {
+        "label": "37\u201348 h",
+        "start_hour": 37,
+        "end_hour": 48,
+        "mae_mw": 2.4717,
+        "observations": 60
+      }
+    ]
+  }
+}

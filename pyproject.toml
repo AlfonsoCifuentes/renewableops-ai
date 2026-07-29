@@ -31,6 +31,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+cv = [
+  "elpv-dataset>=1.0.0"
+]
 platform = [
   "boto3>=1.40",
   "duckdb>=1.2",
@@ -41,7 +44,9 @@ platform = [
   "sqlalchemy>=2.0"
 ]
 dev = [
+  "bandit[toml]>=1.8",
   "coverage[toml]>=7.6",
+  "cyclonedx-bom>=7.1",
   "jsonschema>=4.23",
   "mypy>=1.14",
   "pip-audit>=2.7",

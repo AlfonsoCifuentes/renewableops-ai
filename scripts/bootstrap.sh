@@ -2,7 +2,7 @@
 set -euo pipefail
 
 echo "RenewableOps AI · bootstrap"
-uv sync --extra dev --extra platform
+uv sync --extra dev --extra platform --extra cv
 npm install
 export RENEWABLEOPS_ENABLE_MLFLOW=true
 export MLFLOW_TRACKING_URI=sqlite:///data/mlflow.db

@@ -4,6 +4,7 @@ export type Severity = "critical" | "high" | "medium" | "low";
 export interface SnapshotMeta {
   snapshot_version: string;
   generated_at: string;
+  data_through: string;
   display_timezone: string;
   pipeline_run_id: string;
   data_status: string;
@@ -89,6 +90,15 @@ export interface ModelMetric {
   coverage_p10_p90: number;
   dataset_rows: number;
   test_rows: number;
+  validation_mae_mw: number;
+  nrmse: number;
+  pinball_p10: number;
+  pinball_p50: number;
+  pinball_p90: number;
+  interval_width_mw: number;
+  quantile_crossing_rate: number;
+  validation_folds: number;
+  validation_gap_hours: number;
 }
 
 export interface Champion extends ModelMetric {
@@ -97,6 +107,10 @@ export interface Champion extends ModelMetric {
   stage: string;
   approved_by: string;
   drift_status: string;
+  drift_max_psi?: number | null;
+  feature_drift?: Record<string, number>;
+  target_psi?: number | null;
+  prediction_psi?: number | null;
   trained_at: string;
 }
 
@@ -127,6 +141,11 @@ export interface Source {
   age: string;
   kind: "official" | "synthetic";
   license: string;
+  extracted_at: string | null;
+  source_updated_at: string | null;
+  checksum: string | null;
+  records: number;
+  evidence: string | null;
 }
 
 export interface QualityRow {
@@ -141,16 +160,19 @@ export interface QualityRow {
 export interface Service {
   name: string;
   status: string;
-  latency_ms: number;
-  uptime: number;
+  latency_ms: number | null;
+  uptime: number | null;
+  evidence_at: string | null;
+  evidence_scope: string;
 }
 
 export interface Workflow {
   name: string;
   status: string;
-  duration_s: number;
+  duration_s: number | null;
   last_run: string;
   runs_7d: number;
+  evidence: string;
 }
 
 export interface Risk {
@@ -161,6 +183,10 @@ export interface Risk {
   residual: string;
   owner: string;
   control: string;
+  status: string;
+  likelihood: number;
+  impact: number;
+  evidence: string;
 }
 
 export interface AuditEvent {
@@ -200,16 +226,85 @@ export interface DashboardSnapshot {
     model_version: string;
     is_synthetic: boolean;
   }[];
+  forecast_horizon_metrics: Record<
+    "solar" | "wind",
+    {
+      label: string;
+      start_hour: number;
+      end_hour: number;
+      mae_mw: number;
+      observations: number;
+    }[]
+  >;
   model_metrics: ModelMetric[];
   champions: Champion[];
-  cv_metrics: Record<string, string | number>;
+  challengers: Champion[];
+  drift: {
+    generated_at?: string;
+    method?: string;
+    scope?: string;
+    technologies?: Record<string, {
+      status: string;
+      max_psi: number;
+      feature_psi: Record<string, number>;
+      target_psi: number;
+      prediction_psi: number;
+    }>;
+  };
+  cv_metrics: {
+    dataset?: string;
+    data_origin?: string;
+    license?: string;
+    champion?: string;
+    model?: string;
+    images?: number;
+    balanced_accuracy?: number;
+    macro_f1?: number;
+    pr_auc?: number;
+    roc_auc?: number;
+    brier_score?: number;
+    expected_calibration_error?: number;
+    confusion_matrix?: number[][];
+    class_order?: string[];
+    candidate_validation?: Record<string, { macro_f1?: number }>;
+    test_used_for_selection?: boolean;
+  };
   market: MarketPoint[];
+  market_capture_rates: {
+    solar: number;
+    wind: number;
+    portfolio: number;
+  };
   inspections: Inspection[];
   sources: Source[];
   quality: QualityRow[];
+  quality_summary: {
+    checks_executed: number;
+    checks_passed: number;
+    checks_watch_or_failed: number;
+    quarantined_rows: number;
+    quarantined_rate: number;
+    schema_changes_detected: number;
+    overall_validity: number;
+  };
   services: Service[];
   workflows: Workflow[];
   risks: Risk[];
+  governance: {
+    documents: {
+      name: string;
+      description: string;
+      status: string;
+      count: number;
+      evidence: string[];
+    }[];
+    frameworks: {
+      name: string;
+      status: string;
+      evidence: string | null;
+    }[];
+    disclaimer: string;
+  };
   audit: AuditEvent[];
   lineage: { from: string; to: string; status: string }[];
   scenarios: Scenario[];

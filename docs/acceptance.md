@@ -1,65 +1,67 @@
 # Estado de aceptación
 
-Fecha de corte: 2026-07-28. Release: 1.0.0.
+Fecha de corte: 2026-07-29. Release: 1.0.0.
 
-Esta matriz responde literalmente a las 31 preguntas de la especificación. Una
-respuesta «sí» exige código y evidencia local; la existencia de un fichero cloud
-no se presenta como una ejecución remota.
+Esta matriz responde literalmente a las 31 preguntas finales de la
+especificación. Un «sí» exige código ejecutado y evidencia versionada; un
+recurso cloud declarado pero no ejecutado no cuenta como ejecución remota.
 
 | # | Estado | Evidencia |
 |---:|:---:|---|
-| 1 | Sí | `scripts/bootstrap.ps1`, `scripts/bootstrap.sh`, lockfiles y arranque local verificado. |
-| 2 | Sí | 25.920 filas / 12 activos en `data/lakehouse`; el seed es determinista. |
-| 3 | Sí | Clientes HTTP reales y acotados para REData, PVGIS y AEMET; PVGIS respondió con checksum. REData devolvió HTTP 400 y AEMET exige clave, ambos declarados como fallback. |
-| 4 | Sí | `data/source_registry.yaml`, data cards y tres manifiestos SHA-256. |
-| 5 | Sí | `pipeline.py` normaliza, interpola, deduplica y escribe Bronze/Silver/Gold con Pandas. |
-| 6 | Sí | NumPy genera señales físicas, fallos, cuantiles, residuals, optimización de batería y visión sintética. |
-| 7 | Sí | Ridge, ExtraTrees e HistGradientBoosting se entrenan para solar y eólica. |
-| 8 | Sí | Lags/rollings causales con `shift(1)` y holdout final bloqueado de 14 días. |
-| 9 | Sí | Persistencia de 24 h; tests exigen skill positivo. |
-| 10 | Sí | P10/P50/P90 ordenados y cobertura registrada. |
-| 11 | Sí | Reglas físicas, residuales e Isolation Forest con severidad e impacto. |
-| 12 | Sí | HOG + LBP + LogisticRegression calibrada y artefacto versionado. |
-| 13 | Sí | MLflow 3 local sobre SQLite: doce ejecuciones candidatas verificadas. |
-| 14 | Sí | Registry Champion/Challenger, gates, aprobación manual y alias de rollback. |
-| 15 | Sí | Prometheus scrapeó la API como `up`; Grafana provisionó el dashboard y Loki arrancó en el perfil real. |
-| 16 | Sí | Next.js: 13 áreas, URL state, filtros, escenarios, drill-down, CSV, responsive y tema dual. |
-| 17 | Sí | Seis workflows n8n importables; una ejecución CLI real terminó en `success`. |
-| 18 | Sí | Snapshot saneado y manifiesto público; workflow programado de publicación. |
-| 19 | Sí | Threat model, CSP, headers, límites, MIME/decode, HMAC, auditoría y scans. |
-| 20 | Sí | System/model/data cards, matriz legal, riesgos y aprobación humana. |
-| 21 | Sí | Playbook SEV-1–4 y Scenario Lab con detección, contención y reversión. |
-| 22 | Sí | Alias Rollback, runbook y estrategia Kubernetes canary/rollback. |
-| 23 | Sí | Terraform 1.15.8: `fmt -check` y `validate` pasan sin aplicar recursos. |
-| 24 | Sí | Databricks CLI 1.9.0: interpolación y schema del bundle pasan en modo estricto. |
-| 25 | No — externo | Lakeflow está implementado, pero no se inventa un run sin workspace autenticado. |
-| 26 | No — externo | Los Jobs y dependencias están implementados, pero falta un run remoto autorizado. |
-| 27 | Sí, con límite | Registry local funciona; el registro en Unity Catalog está implementado y su falta de ejecución remota está documentada. |
-| 28 | No — externo | El `.lvdash.json` y el recurso AI/BI validan, pero no hay publicación en una cuenta ajena. |
-| 29 | Sí | Reconciliación Pandas/PySpark 4.2 ejecutada con Temurin 21 y test aprobatorio. |
-| 30 | Sí | Python/API/Spark, frontend, E2E desktop/mobile, lint, tipos, build y seguridad pasan. |
-| 31 | Sí | Cada pantalla y artefacto distingue oficial, derivado, sintético, simulación y referencia no desplegada. |
+| 1 | Sí | Bootstrap Windows/Linux, `uv.lock`, `package-lock.json`, seed y arranque local verificados. |
+| 2 | Sí | Seed de 25.920 filas y perfil de escala de 2.522.928 filas, 12 activos, 730 días, cinco minutos y 20 escenarios; hashes válidos en `artifacts/verification/scada-scale.json`. |
+| 3 | Sí | Ejecución real `ingest-20260729T093102Z-8de154f4`: REData 32, PVGIS 228 y Eurostat 6 registros; AEMET se declara `not_configured` sin clave. |
+| 4 | Sí | Registry, data cards, seis manifests de dataset, schema fingerprints, timestamps y SHA-256. |
+| 5 | Sí | Pandas normaliza UTC, deduplica, valida reglas físicas y escribe Bronze/Silver/Gold; reconciliación Spark independiente aprobada. |
+| 6 | Sí | NumPy genera señales físicas y 20 fallos, cuantifica anomalías, calcula batería y alimenta PSI/estadística visual. |
+| 7 | Sí | Ridge, ElasticNet, RandomForest, ExtraTrees e HistGradientBoosting se entrenan por tecnología. |
+| 8 | Sí | Lags 1/24/168 h y rolling desplazado; TimeSeriesSplit de 3 folds, gap 24 h y test final de 14 días intacto. |
+| 9 | Sí | Cinco baselines: 1 h, 24 h, 168 h, hora/día y referencia física; skill registrado. |
+| 10 | Sí | Tres regresores cuantílicos entrenados para P10/P50/P90; pinball, cobertura, nRMSE, anchura y reparación de cruces documentados. |
+| 11 | Sí | Reglas físicas, residuos e Isolation Forest con severidad, causa, recomendación y MWh/€ en riesgo. |
+| 12 | Sí | ELPV real: 2.624 imágenes, HOG/LBP/textura, cinco candidatos, calibración, test de 525 imágenes y slices mono/poly. |
+| 13 | Sí | MLflow local SQLite recibió los diez candidatos de la pasada final, métricas, parámetros, manifest, signature, input example y champions. |
+| 14 | Sí | Registry Champion/Challenger, selección por validación, gates, rollback y aprobación manual pendiente; no hay autopromoción. |
+| 15 | Sí | Nueve servicios Docker; healthchecks, Prometheus targets `up`, dashboard Grafana provisionado y Loki operativo. |
+| 16 | Sí | Next.js con 13 áreas, URL state, filtros, drill-down, CSV, responsive, tema dual y estados de carga/error/vacío. |
+| 17 | Sí | Seis workflows n8n importados y ejecutados con éxito; duración individual en `artifacts/verification/n8n-executions.json`. |
+| 18 | Sí | Snapshot saneado, manifest SHA-256, histórico diario, comando publish sin reentrenar y workflow GitHub programado. |
+| 19 | Sí | Threat model, CSP/headers, MIME/bytes/píxeles, CORS acotado, auditoría, SBOM CycloneDX, Bandit, escaneo de secretos, pip-audit y npm audit. |
+| 20 | Sí | System/model/data cards, intended/prohibited use, AI Act/NIS2/NIST/GDPR, riesgos y aprobación humana. |
+| 21 | Sí | Playbook SEV-1–4 y Scenario Lab real; el E2E live persiste el evento y comprueba reversión del sandbox. |
+| 22 | Sí | Alias Rollback, runbook y estrategia Kubernetes canary/rollback; producción sigue no desplegada. |
+| 23 | Sí | Terraform 1.15.8: `fmt -check` y `validate` pasan sin `plan/apply`. |
+| 24 | Sí | Databricks CLI 1.9.0: bundle, interpolación y schema pasan en modo estricto y offline. |
+| 25 | No — externo | Lakeflow está implementado, pero un run remoto requiere workspace OAuth del propietario. |
+| 26 | No — externo | Jobs diarios/semanales están implementados, pero no se atribuye una ejecución remota inexistente. |
+| 27 | Sí, con límite | Registry local/MLflow funciona; Unity Catalog Model Registry está implementado y la ausencia de ejecución remota está documentada. |
+| 28 | No — externo | AI/BI `.lvdash.json` y recurso bundle validan; publicar exige una cuenta Databricks autorizada. |
+| 29 | Sí | Pandas/PySpark 4.2 reconcilian agregados horarios con JDK 25 en test de integración. |
+| 30 | Sí | 42 Python/API + 1 Spark + 3 UI + 22 E2E responsive + 3 E2E live; lint, tipos, build, seguridad y runtime pasan. |
+| 31 | Sí | UI, manifests y documentación distinguen dato oficial, sintético, derivado, evaluación, simulación y recurso no desplegado. |
 
 ## Resultado medido
 
-- Forecast campeón: solar MAE 1,0188 MW y skill 0,6097; eólico MAE
-  2,8901 MW y skill 0,8317.
-- API: test P95 local inferior a 250 ms; navegador observado con FCP/LCP de
-  aproximadamente 272 ms y CLS 0.
-- Accesibilidad: cero violaciones Axe en desktop y móvil; ocho escenarios E2E
-  pasan en Chromium desktop/móvil.
-- Tests: 26 pruebas Python/API/Spark, tres pruebas de componentes y ocho
-  escenarios E2E aprobados; Mypy valida 20 módulos fuente.
-- Seguridad: `pip-audit` sin vulnerabilidades conocidas y auditoría npm sin
-  críticas; los avisos no corregibles están razonados en
+- Forecast seleccionado por validación: solar RandomForest, MAE test 0,8883 MW,
+  nMAE 1,68 %, skill 65,97 % y cobertura P10–P90 95,01 %; eólico ExtraTrees,
+  MAE 2,6610 MW, nMAE 3,766 %, skill 84,50 % y cobertura 83,68 %.
+- Visión ELPV: balanced accuracy 0,7337, macro F1 0,7467, PR-AUC 0,7354 y
+  ROC-AUC 0,8254. Es evidencia de benchmark, no validación de planta.
+- Runtime: API 46,09 ms, dashboard 6,39 ms, n8n 3,05 ms, Grafana 1,86 ms y
+  Prometheus 12,54 ms en la sonda local final; los nueve servicios requeridos
+  estaban operativos.
+- Calidad: Ruff, Mypy sobre 22 módulos, ESLint, TypeScript y build Next.js
+  pasan. Pytest: 43 aprobadas, incluida la reconciliación Spark al declarar el
+  JDK compatible. Playwright: 22 responsive y 3 live aprobadas.
+- Seguridad: pip-audit y Bandit no encuentran vulnerabilidades/hallazgos altos;
+  npm no encuentra críticas. Las 12 altas del árbol completo —tres en runtime—
+  tienen exposición y salida documentadas en
   `governance/security-exceptions.md`.
-- Plataforma: los perfiles Docker core/monitoring arrancan y pasan endpoints;
-  Terraform, Kustomize, Helm y schema del bundle también pasan. Véanse los JSON
-  de `artifacts/verification/`.
 
-## Gates externos abiertos
+## Único gate externo
 
-Los puntos 25, 26 y 28 son una única dependencia externa: el propietario debe
-autenticar un Databricks Free Edition propio. El registro completo con bloqueo,
-impacto, alternativa y siguiente paso está en
-`docs/issues/remote-databricks-validation.md`. No requiere cambios de código.
+Los puntos 25, 26 y 28 comparten una sola dependencia externa: el propietario
+debe autenticar su Databricks Free Edition mediante OAuth. El código, bundle y
+validación estructural están terminados; no es legítimo crear una cuenta,
+aceptar términos o publicar en un workspace ajeno. El procedimiento exacto está
+en `docs/issues/remote-databricks-validation.md`.

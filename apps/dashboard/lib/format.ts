@@ -1,4 +1,3 @@
-const number = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 1 });
 const integer = new Intl.NumberFormat("es-ES", { maximumFractionDigits: 0 });
 const currency = new Intl.NumberFormat("es-ES", {
   style: "currency",
@@ -6,8 +5,8 @@ const currency = new Intl.NumberFormat("es-ES", {
   maximumFractionDigits: 0,
 });
 
-export function formatNumber(value: number): string {
-  return number.format(value);
+export function formatNumber(value: number, maximumFractionDigits = 1): string {
+  return new Intl.NumberFormat("es-ES", { maximumFractionDigits }).format(value);
 }
 
 export function formatInteger(value: number): string {

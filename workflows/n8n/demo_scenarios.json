@@ -3,7 +3,7 @@
   "name": "Demo Scenarios",
   "nodes": [
     {
-      "parameters": { "httpMethod": "POST", "path": "demo/scenario", "responseMode": "responseNode", "options": {} },
+      "parameters": { "httpMethod": "POST", "path": "demo/scenario", "responseMode": "lastNode", "options": {} },
       "id": "demo-webhook",
       "name": "Demo scenario webhook",
       "type": "n8n-nodes-base.webhook",
@@ -12,13 +12,35 @@
       "webhookId": "4f7636c4-cf85-49c2-b632-38821b72e112"
     },
     {
+      "parameters": {},
+      "id": "demo-manual",
+      "name": "Manual scenario drill",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-430, 120]
+    },
+    {
+      "parameters": { "assignments": { "assignments": [
+        { "id": "scenario", "name": "scenario", "type": "string", "value": "soiling" },
+        { "id": "asset", "name": "asset_id", "type": "string", "value": "sol-ext-02" },
+        { "id": "severity", "name": "severity", "type": "number", "value": 62 },
+        { "id": "duration", "name": "duration_hours", "type": "number", "value": 12 },
+        { "id": "seed", "name": "seed", "type": "number", "value": 42 }
+      ] } },
+      "id": "demo-defaults",
+      "name": "Create manual scenario",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-300, 120]
+    },
+    {
       "parameters": {
         "method": "POST",
         "url": "http://api:8000/api/v1/scenarios",
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify($json.body) }}",
+        "body": "={{ JSON.stringify($json.body || $json) }}",
         "sendHeaders": true,
         "headerParameters": { "parameters": [{ "name": "X-Correlation-ID", "value": "={{ $execution.id }}" }] },
         "options": { "timeout": 60000 }
@@ -30,16 +52,21 @@
       "position": [-170, 0]
     },
     {
-      "parameters": { "respondWith": "json", "responseBody": "={{ $json }}", "options": { "responseCode": 200 } },
+      "parameters": { "assignments": { "assignments": [
+        { "id": "status", "name": "workflow_status", "type": "string", "value": "completed" },
+        { "id": "reverted", "name": "sandbox_reverted", "type": "boolean", "value": "={{ $json.reverted }}" }
+      ] } },
       "id": "demo-response",
       "name": "Return audited result",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.4,
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
       "position": [90, 0]
     }
   ],
   "connections": {
     "Demo scenario webhook": { "main": [[{ "node": "Execute isolated scenario", "type": "main", "index": 0 }]] },
+    "Manual scenario drill": { "main": [[{ "node": "Create manual scenario", "type": "main", "index": 0 }]] },
+    "Create manual scenario": { "main": [[{ "node": "Execute isolated scenario", "type": "main", "index": 0 }]] },
     "Execute isolated scenario": { "main": [[{ "node": "Return audited result", "type": "main", "index": 0 }]] }
   },
   "pinData": {},

@@ -1,0 +1,58 @@
+{
+  "run_id": "ingest-20260729T093102Z-8de154f4",
+  "generated_at": "2026-07-29T09:31:02.953716+00:00",
+  "status": "passed",
+  "required_successes": 3,
+  "required_sources": 3,
+  "sources": {
+    "ree_redata": {
+      "status": "success",
+      "authority": "Red Eléctrica",
+      "name": "REData API",
+      "extracted_at": "2026-07-29T09:31:04.119437+00:00",
+      "source_updated_at": "2026-06-04T16:19:07.000+02:00",
+      "checksum_sha256": "e70ac4810ec081284eef73ff2500dabc9756e6aea128fa231ceaa8ed62ef2fdd",
+      "schema_fingerprint_sha256": "246fa9d6ff5db5b7f7f2008e772cde416de516f1a75c7a91abf79cfc4202c438",
+      "records": 32,
+      "artifact": "data/lakehouse/bronze/official/ree_redata/extraction_date=2026-07-29/run_id=ingest-20260729T093102Z-8de154f4/payload.json",
+      "manifest": "data/manifests/official_ree_redata.json",
+      "attribution": "Red Eléctrica de España",
+      "license_notes": "Review official reuse terms before redistribution"
+    },
+    "pvgis": {
+      "status": "success",
+      "authority": "European Commission Joint Research Centre",
+      "name": "PVGIS API",
+      "extracted_at": "2026-07-29T09:31:04.987336+00:00",
+      "source_updated_at": null,
+      "checksum_sha256": "577ab4f9040ec12c75a110d1227fb6e3760d617c984ca1bf0c8fa6ea8797f4bb",
+      "schema_fingerprint_sha256": "eb4fc00aba9d0281a741c1ba352d959018b79369a94930dffef10cbd6159c4cf",
+      "records": 228,
+      "artifact": "data/lakehouse/bronze/official/pvgis/extraction_date=2026-07-29/run_id=ingest-20260729T093102Z-8de154f4/payload.json",
+      "manifest": "data/manifests/official_pvgis.json",
+      "attribution": "European Commission, Joint Research Centre",
+      "license_notes": "Cite PVGIS and JRC; review dataset-specific notices"
+    },
+    "eurostat_renewables": {
+      "status": "success",
+      "authority": "Eurostat",
+      "name": "Eurostat renewable energy indicators",
+      "extracted_at": "2026-07-29T09:31:05.452328+00:00",
+      "source_updated_at": "2026-07-14T11:00:00+0200",
+      "checksum_sha256": "86b30dfc06f4e2cfca710c0c9e5e156c5b8d8ae08a76c7e64702e85d58e59408",
+      "schema_fingerprint_sha256": "76da895e167acbb9a7b99a9ce2684e505c9667264db74d1f243f3c6324e07ee8",
+      "records": 6,
+      "artifact": "data/lakehouse/bronze/official/eurostat_renewables/extraction_date=2026-07-29/run_id=ingest-20260729T093102Z-8de154f4/payload.json",
+      "manifest": "data/manifests/official_eurostat_renewables.json",
+      "attribution": "Eurostat dataset nrg_ind_ren",
+      "license_notes": "Reuse under the Eurostat reuse policy with source attribution"
+    },
+    "aemet": {
+      "status": "not_configured",
+      "authority": "Agencia Estatal de Meteorología",
+      "name": "AEMET OpenData",
+      "reason": "AEMET_API_KEY is not configured; this source is not used as evidence.",
+      "fallback_source": "synthetic_weather"
+    }
+  }
+}

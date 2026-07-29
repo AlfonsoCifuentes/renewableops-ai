@@ -434,14 +434,20 @@ export function DashboardApp({
               <article key={source.id}>
                 <StatusDot status={source.status} />
                 <div><strong>{source.name}</strong><span>{source.authority} · {source.kind}</span></div>
-                <span>{source.age}</span>
-                <small>{source.license}</small>
+                <span>
+                  {source.age} · {source.status === "not_configured" ? "no configurada" : source.status}
+                </span>
+                <small>
+                  {source.license}
+                  {source.checksum ? ` · SHA-256 ${source.checksum.slice(0, 10)}…` : ""}
+                  {source.records ? ` · ${source.records} registros` : ""}
+                </small>
               </article>
             ))}
           </div>
           <div className="source-note">
             <ShieldCheck size={17} />
-            <p>Los datos oficiales conservan atribución y checksum. La telemetría SCADA y las imágenes de esta demo están marcadas como sintéticas.</p>
+            <p>Los estados proceden de manifiestos de ingesta reales. Una fuente sin ejecución o credencial se muestra como tal; la telemetría SCADA y las imágenes siguen marcadas como sintéticas.</p>
           </div>
         </Modal>
       ) : null}
@@ -457,7 +463,7 @@ export function DashboardApp({
         <Modal title="Actividad reciente" eyebrow="Centro de avisos" onClose={() => setNoticeOpen(false)}>
           <div className="notice-list">
             <article><Badge tone="warning">review</Badge><div><strong>Challenger eólico retenido</strong><span>Falta evidencia en régimen de viento extremo.</span></div></article>
-            <article><Badge tone="success">passed</Badge><div><strong>Snapshot saneado publicado</strong><span>84 controles de calidad superados.</span></div></article>
+            <article><Badge tone="success">passed</Badge><div><strong>Snapshot saneado publicado</strong><span>{data.quality_summary.checks_passed} de {data.quality_summary.checks_executed} controles superados.</span></div></article>
             <article><Badge tone="info">info</Badge><div><strong>Comando rápido</strong><span>La búsqueda global estará conectada en el perfil autenticado.</span></div></article>
           </div>
         </Modal>

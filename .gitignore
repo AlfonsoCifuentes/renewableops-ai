@@ -24,11 +24,15 @@ artifacts/*
 !artifacts/screenshots/*.png
 !artifacts/verification/
 !artifacts/verification/*.json
+!artifacts/security/
+!artifacts/security/*.json
 !artifacts/demo/
 !artifacts/demo/*.webm
 data/mlruns/
 data/mlflow.db
 data/audit/
+data/scale/
+mlruns/
 *.log
 
 # Tooling / OS

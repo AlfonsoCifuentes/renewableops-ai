@@ -14,19 +14,24 @@ dispatch, bids, safety or autonomous control.
 ## Data and features
 
 Synthetic hourly solar telemetry, causal calendar encodings, weather,
-availability, lag 24 h and shifted rolling 24 h. Last 14 days are holdout.
+availability, lags 1/24/168 h and shifted rolling 24 h. Last 14 days are an
+untouched holdout.
 
 ## Algorithm and validation
 
-Ridge, ExtraTrees and HistGradientBoosting are compared with 24 h persistence.
-Champion is lowest MAE. Metrics are recorded in
-`data/models/forecast_metrics.json`; exact run evidence supersedes this card.
+Ridge, ElasticNet, RandomForest, ExtraTrees and HistGradientBoosting are
+compared. Selection uses the lowest mean MAE over three TimeSeriesSplit folds
+with a 24 h gap; the test is not used for ranking. Five baselines cover 1 h,
+24 h, 168 h, hour/weekday mean and physical expected power. Separate gradient
+boosting quantile models estimate P10/P50/P90. Metrics and error buckets 1–48 h
+live in `data/models/forecast_metrics.json` and
+`data/models/solar_forecast_evidence.json`.
 
 ## Error analysis
 
 Expected weaknesses: dawn/dusk transitions, extreme cloud changes, outage
-periods and a distribution unlike a real plant. Interval residuals are
-empirical and not calibrated for all regimes.
+periods and a distribution unlike a real plant. Quantile intervals are measured
+but are not guaranteed to be calibrated for every operating regime.
 
 ## Security, monitoring and rollback
 

@@ -1,16 +1,16 @@
 {
   "dataset_id": "forecast_evaluation_gold",
-  "dataset_version": "2026-07-28T201059Z",
-  "run_id": "run-20260728-0600-demo",
+  "dataset_version": "2026-07-29T103233Z",
+  "run_id": "run-20260729T103043Z-09cba632",
   "source_ids": [
     "sklearn"
   ],
   "row_count": 3370,
   "min_timestamp": "2026-07-14T00:00:00+00:00",
   "max_timestamp": "2026-07-28T00:00:00+00:00",
-  "schema_hash": "e9c1ecabb32077c79cb2c9733e3076cf239e2d6652ca6236db84f3777d58e92b",
-  "content_hash": "sha256:40acc00b84114fa8a186e4660b5c220ba86055d758018385b7b82974a5f002bf",
-  "code_commit": "working-tree",
+  "schema_hash": "e8cfc8b2ed0c2b07c45ca7654818df564a79857e33ccc3e04bd1c8abf0ee8f7e",
+  "content_hash": "sha256:6287ba6e409276c3dd3cea90d8996b9909a634f60d6ae404a1c376bc339eb822",
+  "code_commit": "1ce80160aed7e3d5eff56ff184148ba01898edc5",
   "quality_status": "passed",
   "contains_synthetic_data": true
 }

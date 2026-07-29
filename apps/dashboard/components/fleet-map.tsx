@@ -11,8 +11,9 @@ interface FleetMapProps {
 }
 
 function position(asset: Asset) {
-  const left = ((asset.longitude + 9.5) / 12.7) * 78 + 10;
-  const top = ((44.2 - asset.latitude) / 8.5) * 73 + 11;
+  const collisionOffset = asset.technology === "battery" ? { x: 3.2, y: 2.4 } : { x: 0, y: 0 };
+  const left = ((asset.longitude + 9.5) / 12.7) * 78 + 10 + collisionOffset.x;
+  const top = ((44.2 - asset.latitude) / 8.5) * 73 + 11 + collisionOffset.y;
   return {
     left: `${Math.min(92, Math.max(6, left))}%`,
     top: `${Math.min(90, Math.max(8, top))}%`,

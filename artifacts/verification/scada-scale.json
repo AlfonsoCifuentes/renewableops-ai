@@ -1,0 +1,13 @@
+{
+  "generated_at": "2026-07-29T10:21:54.805118+00:00",
+  "status": "passed",
+  "scope": "ignored local scale profile; reproducible with `make scale-data`",
+  "profile_manifest": "data/scale/scada_5min_2y/manifest.json",
+  "rows": 2522928,
+  "assets": 12,
+  "days": 730,
+  "frequency": "5min",
+  "scenario_count": 20,
+  "files": 12,
+  "checksums_valid": true
+}

@@ -14,24 +14,31 @@ procedencia visible.
 ## Qué está terminado
 
 - Lakehouse local Bronze/Silver/Gold en Parquet, manifiestos y checksums.
-- 25.920 observaciones horarias reproducibles para 12 activos.
-- Forecast solar y eólico: persistence baseline, Ridge, ExtraTrees e
-  HistGradientBoosting, holdout temporal, P10/P50/P90, skill y bias.
+- Seed operativo de 25.920 observaciones horarias y perfil de escala reproducible
+  de 2.522.928 filas a cinco minutos, 12 activos, dos años y 20 escenarios.
+- Ingesta real y acotada de REData, PVGIS y Eurostat, con payload Bronze,
+  timestamp, schema fingerprint, SHA-256 y estado por fuente; AEMET permanece
+  desactivada hasta que el propietario aporte su clave.
+- Forecast solar y eólico: cinco candidatos sklearn, cinco baselines, selección
+  con tres folds temporales y gap de 24 h, test final intacto, P10/P50/P90
+  entrenados y error medido por horizonte 1–48 h.
 - Anomalías por reglas físicas, residuos e Isolation Forest.
-- Clasificador visual sklearn con HOG, LBP y estadísticas de textura.
-- Registry local Champion/Challenger, MLflow local opcional y Unity Catalog en
-  Databricks.
+- Clasificador visual sklearn sobre las 2.624 imágenes reales de ELPV, con HOG,
+  LBP, textura, cinco candidatos, calibración y métricas por célula mono/poly.
+- Registry local Champion/Challenger, diez candidatos reflejados en MLflow
+  local y promoción siempre sujeta a aprobación humana.
 - FastAPI versionada, métricas Prometheus, IDs de correlación y validación de
   imágenes.
 - Dashboard Next.js con 13 áreas, filtros persistentes, escenarios, responsive,
-  tema oscuro, estados de error y accesibilidad verificada.
+  tema dual, estados de error y procedencia visible; ninguna métrica presentada
+  es decorativa.
 - PostgreSQL, MinIO, MLflow, n8n, Prometheus, Grafana, Loki, Redis y Spark por
   perfiles Docker.
 - Bundle Databricks con Lakeflow pipeline, Jobs, SQL de Unity Catalog, metric
   views y dashboard AI/BI versionado.
 - Terraform Azure no aplicado y Kubernetes/Helm de referencia.
-- Threat model, cards, registro de riesgos, incident response y cadena de
-  auditoría hash.
+- Threat model, cards, registro de riesgos, incident response, SBOM CycloneDX y
+  cadena de auditoría hash.
 
 ## Arranque rápido
 
@@ -79,13 +86,17 @@ uv run pytest
 npm run lint
 npm run typecheck
 npm run test:ui
+npm run test:e2e
 npm run build
+uv run pip-audit
+uv run bandit -r packages apps/api/src scripts -x tests -lll -q
 docker compose config --quiet
 uv run python scripts/verify_environment.py
 ```
 
-Las pruebas PySpark se activan con `uv sync --extra platform`; si Java/Spark no
-están instalados, se omiten explícitamente. Los tests E2E requieren:
+Las pruebas PySpark se activan con `uv sync --extra platform` y un JDK compatible
+declarado en `JAVA_HOME`; si no están disponibles, se omiten explícitamente. Los
+tests E2E requieren:
 
 ```bash
 npx playwright install chromium
@@ -133,8 +144,9 @@ flowchart LR
   subgraph Sources["Fuentes y simulación"]
     REE["REData"]
     PVGIS["PVGIS"]
+    EURO["Eurostat"]
     SCADA["SCADA sintético"]
-    IMG["Texturas de inspección"]
+    IMG["ELPV · imágenes reales"]
   end
   subgraph Lakehouse["Datos gobernados"]
     B["Bronze"]
@@ -154,6 +166,7 @@ flowchart LR
   end
   REE --> B
   PVGIS --> B
+  EURO --> B
   SCADA --> B --> S --> G --> FE --> SK --> MF
   IMG --> SK
   G --> API --> UI
@@ -175,8 +188,9 @@ detalle en [arquitectura](docs/architecture/overview.md).
 - Los lags y rollings usan `shift(1)` antes de agregar, evitando mirar el
   objetivo presente.
 - El holdout son los últimos 14 días, nunca un split aleatorio.
-- La demo real-fuente es acotada: `renewableops ingest` consulta REData y PVGIS;
-  si no están disponibles declara el fallback, no inventa éxito.
+- La ingesta oficial es acotada: `renewableops ingest` consulta REData, PVGIS y
+  Eurostat; una fuente no configurada o fallida conserva evidencia explícita y
+  nunca se presenta como éxito.
 - Los snapshots públicos excluyen secretos, correo, identificadores personales
   y payloads de fuentes crudos.
 

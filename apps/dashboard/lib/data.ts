@@ -8,6 +8,7 @@ import type { DashboardSnapshot } from "@/lib/types";
 const metaSchema = z.object({
   snapshot_version: z.string(),
   generated_at: z.string(),
+  data_through: z.string(),
   display_timezone: z.string(),
   pipeline_run_id: z.string(),
   data_status: z.string(),

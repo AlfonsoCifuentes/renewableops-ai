@@ -1,0 +1,67 @@
+{
+  "generated_at": "2026-07-29T10:33:32.029248+00:00",
+  "method": "Population Stability Index with reference-decile bins",
+  "scope": "immediately preceding reference window vs current synthetic demo telemetry; monitoring evidence, not causal diagnosis",
+  "technologies": {
+    "solar": {
+      "status": "watch",
+      "max_psi": 0.20176,
+      "feature_psi": {
+        "hour_sin": 6e-05,
+        "hour_cos": 6e-05,
+        "day_sin": 13.17613,
+        "day_cos": 10.61294,
+        "irradiance_wm2": 0.00741,
+        "temperature_c": 0.07264,
+        "cloud_cover_fraction": 0.20176,
+        "wind_speed_ms": 0.00344,
+        "availability": 0.01051,
+        "lag_1h_mw": 0.00507,
+        "lag_24h_mw": 0.00446,
+        "lag_168h_mw": 0.02104,
+        "rolling_24h_mw": 0.14061
+      },
+      "status_scope": "operational features, normalized target and prediction; deterministic calendar encodings are informational",
+      "target_psi": 0.00801,
+      "prediction_psi": 0.0252,
+      "reference_rows": 3360,
+      "current_rows": 1685,
+      "reference_window_days": 28,
+      "current_window_days": 14,
+      "thresholds": {
+        "watch": 0.1,
+        "alert": 0.25
+      }
+    },
+    "wind": {
+      "status": "watch",
+      "max_psi": 0.10541,
+      "feature_psi": {
+        "hour_sin": 6e-05,
+        "hour_cos": 6e-05,
+        "day_sin": 13.17613,
+        "day_cos": 10.61294,
+        "irradiance_wm2": 0.0,
+        "temperature_c": 0.08549,
+        "cloud_cover_fraction": 0.09736,
+        "wind_speed_ms": 0.02883,
+        "availability": 0.01245,
+        "lag_1h_mw": 0.01612,
+        "lag_24h_mw": 0.0165,
+        "lag_168h_mw": 0.00515,
+        "rolling_24h_mw": 0.10541
+      },
+      "status_scope": "operational features, normalized target and prediction; deterministic calendar encodings are informational",
+      "target_psi": 0.02615,
+      "prediction_psi": 0.06702,
+      "reference_rows": 3360,
+      "current_rows": 1685,
+      "reference_window_days": 28,
+      "current_window_days": 14,
+      "thresholds": {
+        "watch": 0.1,
+        "alert": 0.25
+      }
+    }
+  }
+}

@@ -1,25 +1,35 @@
 {
   "registry_version": "1.0.0",
-  "generated_at": "2026-07-28T20:10:54.620557+00:00",
+  "generated_at": "2026-07-29T10:31:22.835608+00:00",
   "dataset_manifest": "data/manifests/generation_silver.json",
   "aliases": {
     "solar": {
       "model_name": "solar_forecast",
+      "scope": "evaluation_only",
       "aliases": {
-        "Champion": "extra_trees",
-        "Challenger": "hist_gradient_boosting"
+        "Champion": "random_forest",
+        "Challenger": "extra_trees"
       },
       "champion_metrics": {
         "technology": "solar",
-        "model": "extra_trees",
-        "mae_mw": 1.0188,
-        "rmse_mw": 1.8657,
-        "nmae": 0.01954,
-        "bias_mw": 0.0895,
-        "skill_vs_persistence": 0.6097,
-        "coverage_p10_p90": 0.6997,
-        "dataset_rows": 10680,
-        "test_rows": 1685
+        "model": "random_forest",
+        "mae_mw": 0.8883,
+        "rmse_mw": 1.588,
+        "nmae": 0.0168,
+        "bias_mw": 0.0169,
+        "skill_vs_persistence": 0.6597,
+        "coverage_p10_p90": 0.9501,
+        "dataset_rows": 9960,
+        "test_rows": 1685,
+        "validation_mae_mw": 1.4125,
+        "nrmse": 0.03008,
+        "pinball_p10": 1.2645,
+        "pinball_p50": 0.4441,
+        "pinball_p90": 0.3143,
+        "interval_width_mw": 14.9793,
+        "quantile_crossing_rate": 0.0,
+        "validation_folds": 3,
+        "validation_gap_hours": 24
       },
       "gates": {
         "positive_skill_vs_persistence": true,
@@ -27,26 +37,49 @@
         "interval_coverage_recorded": true,
         "manual_approval_required": true
       },
-      "promotion_status": "approved_for_demo",
+      "selection": {
+        "metric": "rolling_validation_mae_mw",
+        "value": 1.4125,
+        "test_used_for_selection": false,
+        "validation_folds": 3,
+        "gap_hours": 24
+      },
+      "promotion_status": "review_required",
+      "approval": {
+        "status": "pending",
+        "required": true,
+        "template": "governance/approvals/model-promotion-template.md"
+      },
+      "deployment_status": "not_deployed",
       "rollback_alias": "Champion"
     },
     "wind": {
       "model_name": "wind_forecast",
+      "scope": "evaluation_only",
       "aliases": {
         "Champion": "extra_trees",
-        "Challenger": "hist_gradient_boosting"
+        "Challenger": "random_forest"
       },
       "champion_metrics": {
         "technology": "wind",
         "model": "extra_trees",
-        "mae_mw": 2.8901,
-        "rmse_mw": 4.6038,
-        "nmae": 0.04061,
-        "bias_mw": 0.2176,
-        "skill_vs_persistence": 0.8317,
-        "coverage_p10_p90": 0.6938,
-        "dataset_rows": 10680,
-        "test_rows": 1685
+        "mae_mw": 2.661,
+        "rmse_mw": 4.1586,
+        "nmae": 0.03766,
+        "bias_mw": 0.2928,
+        "skill_vs_persistence": 0.845,
+        "coverage_p10_p90": 0.8368,
+        "dataset_rows": 9960,
+        "test_rows": 1685,
+        "validation_mae_mw": 3.436,
+        "nrmse": 0.05744,
+        "pinball_p10": 0.6977,
+        "pinball_p50": 1.3305,
+        "pinball_p90": 0.6615,
+        "interval_width_mw": 12.1586,
+        "quantile_crossing_rate": 0.0,
+        "validation_folds": 3,
+        "validation_gap_hours": 24
       },
       "gates": {
         "positive_skill_vs_persistence": true,
@@ -54,7 +87,20 @@
         "interval_coverage_recorded": true,
         "manual_approval_required": true
       },
-      "promotion_status": "approved_for_demo",
+      "selection": {
+        "metric": "rolling_validation_mae_mw",
+        "value": 3.436,
+        "test_used_for_selection": false,
+        "validation_folds": 3,
+        "gap_hours": 24
+      },
+      "promotion_status": "review_required",
+      "approval": {
+        "status": "pending",
+        "required": true,
+        "template": "governance/approvals/model-promotion-template.md"
+      },
+      "deployment_status": "not_deployed",
       "rollback_alias": "Champion"
     }
   },

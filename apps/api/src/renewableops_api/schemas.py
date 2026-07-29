@@ -51,7 +51,9 @@ class ForecastRequest(BaseModel):
     cloud_cover_fraction: float = Field(ge=0, le=1)
     wind_speed_ms: float = Field(ge=0, le=70)
     availability: float = Field(ge=0, le=1)
+    lag_1h_mw: float | None = Field(default=None, ge=0)
     lag_24h_mw: float = Field(ge=0)
+    lag_168h_mw: float | None = Field(default=None, ge=0)
     rolling_24h_mw: float = Field(ge=0)
 
 
@@ -79,3 +81,10 @@ class BatteryDispatchResponse(BaseModel):
     estimated_margin_eur: float
     method: str = "transparent_quantile_heuristic"
     decision_support_only: bool = True
+
+
+class InspectionReviewRequest(BaseModel):
+    action: Literal["approve", "reject", "correct"]
+    reviewer: str = Field(pattern=r"^[a-z0-9_-]{3,64}$")
+    corrected_label: Literal["defective", "functional"] | None = None
+    reason: str = Field(default="", max_length=500)

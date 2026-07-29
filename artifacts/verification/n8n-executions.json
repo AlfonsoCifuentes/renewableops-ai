@@ -1,0 +1,58 @@
+{
+  "generated_at": "2026-07-29T10:21:15.475870+00:00",
+  "status": "passed",
+  "import": {
+    "status": "success",
+    "return_code": 0
+  },
+  "executions": [
+    {
+      "id": "renewableops-daily",
+      "name": "Daily Renewable Operations",
+      "status": "success",
+      "duration_s": 4.032,
+      "return_code": 0,
+      "error_type": null
+    },
+    {
+      "id": "renewableops-demo-scenarios",
+      "name": "Demo Scenarios",
+      "status": "success",
+      "duration_s": 3.325,
+      "return_code": 0,
+      "error_type": null
+    },
+    {
+      "id": "renewableops-incident-response",
+      "name": "Incident Response",
+      "status": "success",
+      "duration_s": 2.815,
+      "return_code": 0,
+      "error_type": null
+    },
+    {
+      "id": "renewableops-publish-snapshots",
+      "name": "Publish Sanitized Snapshots",
+      "status": "success",
+      "duration_s": 3.4,
+      "return_code": 0,
+      "error_type": null
+    },
+    {
+      "id": "renewableops-security-audit",
+      "name": "Security Audit",
+      "status": "success",
+      "duration_s": 2.848,
+      "return_code": 0,
+      "error_type": null
+    },
+    {
+      "id": "renewableops-weekly-model-review",
+      "name": "Weekly Model Review",
+      "status": "success",
+      "duration_s": 3.313,
+      "return_code": 0,
+      "error_type": null
+    }
+  ]
+}

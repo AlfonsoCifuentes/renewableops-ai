@@ -106,6 +106,7 @@ export function DataExplorer({ data }: { data: DashboardSnapshot }) {
 }
 
 export function DataQuality({ data }: { data: DashboardSnapshot }) {
+  const summary = data.quality_summary;
   const qualityOption: EChartsOption = {
     grid: { left: 130, right: 12, top: 24, bottom: 28 },
     tooltip: { trigger: "axis" },
@@ -122,10 +123,10 @@ export function DataQuality({ data }: { data: DashboardSnapshot }) {
     <>
       <SectionHeader eyebrow="Data contracts · Calidad" title="Datos confiables, fallos visibles." description="Freshness, completitud, validez y estabilidad de esquema con cuarentena explícita." />
       <div className="quality-kpis">
-        <div><span>Checks ejecutados</span><strong>84</strong><small>82 passed · 2 watch</small></div>
-        <div><span>Filas en cuarentena</span><strong>17</strong><small>0,03% del lote</small></div>
-        <div><span>Schema changes</span><strong>0</strong><small>últimos 30 días</small></div>
-        <div><span>Freshness global</span><strong>97,0%</strong><small>dentro de objetivo</small></div>
+        <div><span>Checks ejecutados</span><strong>{summary.checks_executed}</strong><small>{summary.checks_passed} passed · {summary.checks_watch_or_failed} watch/failed</small></div>
+        <div><span>Filas en cuarentena</span><strong>{summary.quarantined_rows}</strong><small>{formatNumber(summary.quarantined_rate, 3)}% del lote</small></div>
+        <div><span>Schema changes</span><strong>{summary.schema_changes_detected}</strong><small>en la materialización actual</small></div>
+        <div><span>Validez global</span><strong>{formatNumber(summary.overall_validity)}%</strong><small>medida sobre artefactos versionados</small></div>
       </div>
       <Panel eyebrow="Última materialización" title="Calidad por dataset">
         <Chart option={qualityOption} height={350} ariaLabel="Métricas de calidad por dataset" />
@@ -168,21 +169,25 @@ export function Mlops({ data }: { data: DashboardSnapshot }) {
               <div><span>nMAE</span><strong>{formatNumber(model.nmae * 100)}%</strong></div>
               <div><span>Skill</span><strong>+{formatNumber(model.skill_vs_persistence * 100)}%</strong></div>
               <div><span>Coverage</span><strong>{formatNumber(model.coverage_p10_p90 * 100)}%</strong></div>
+              <div><span>Drift PSI</span><strong>{model.drift_max_psi === null || model.drift_max_psi === undefined ? "—" : formatNumber(model.drift_max_psi, 3)}</strong></div>
             </div>
+            <p>Selección: {model.validation_folds} folds temporales · gap {model.validation_gap_hours} h · MAE {formatNumber(model.validation_mae_mw, 3)} MW</p>
             <div className="approval-line"><ShieldCheck size={15} /><span>{model.approved_by}</span></div>
           </Panel>
         ))}
-        <Panel className="challenger-card">
-          <Badge tone="warning">challenger</Badge>
-          <h2>wind · extra trees</h2>
-          <p>v1.1.0-rc1 · shadow</p>
-          <div className="gate-list">
-            <span><CheckCircle2 size={14} /> Precisión agregada</span>
-            <span><CheckCircle2 size={14} /> Latencia</span>
-            <span className="gate-wait"><RotateCcw size={14} /> Regímenes extremos</span>
-          </div>
-          <button type="button" className="button button-secondary" disabled>Esperando aprobación</button>
-        </Panel>
+        {data.challengers.map((model) => (
+          <Panel className="challenger-card" key={`challenger-${model.technology}`}>
+            <Badge tone="warning">challenger</Badge>
+            <h2>{model.technology} · {model.model.replaceAll("_", " ")}</h2>
+            <p>v{model.version} · {model.stage}</p>
+            <div className="gate-list">
+              <span><CheckCircle2 size={14} /> Métricas temporales registradas</span>
+              <span><CheckCircle2 size={14} /> Artefacto reproducible</span>
+              <span className="gate-wait"><RotateCcw size={14} /> Aprobación humana pendiente</span>
+            </div>
+            <button type="button" className="button button-secondary" disabled>No desplegado</button>
+          </Panel>
+        ))}
       </div>
       <Panel eyebrow="Experimentos" title="Comparación temporal">
         <Chart option={comparison} height={330} ariaLabel="Comparación de modelos registrados" />

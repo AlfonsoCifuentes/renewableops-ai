@@ -11,6 +11,14 @@
       "position": [-520, 0]
     },
     {
+      "parameters": {},
+      "id": "weekly-manual",
+      "name": "Manual model review",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-520, 120]
+    },
+    {
       "parameters": {
         "url": "http://api:8000/api/v1/models",
         "sendHeaders": true,
@@ -68,6 +76,7 @@
   ],
   "connections": {
     "Monday 07:00": { "main": [[{ "node": "Read registry and metrics", "type": "main", "index": 0 }]] },
+    "Manual model review": { "main": [[{ "node": "Read registry and metrics", "type": "main", "index": 0 }]] },
     "Read registry and metrics": { "main": [[{ "node": "Retraining gate", "type": "main", "index": 0 }]] },
     "Retraining gate": {
       "main": [

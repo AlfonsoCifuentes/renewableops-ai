@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import csv
 import hashlib
 import json
+import re
 import shutil
 from dataclasses import asdict
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -15,8 +17,24 @@ import pandas as pd
 
 from .anomalies import detect_anomalies
 from .assets import ASSETS
-from .config import PUBLIC_DATA_DIR
+from .audit import read_events
+from .config import DATA_DIR, PUBLIC_DATA_DIR
+from .ingestion import load_source_status
 from .modeling import ModelMetrics, build_future_forecast
+
+MAX_PUBLIC_DOCUMENT_BYTES = 5 * 1024 * 1024
+FORBIDDEN_PUBLIC_KEY = re.compile(
+    r"(?:^|_)(?:password|passwd|secret|token|api_key|access_key|private_key)(?:$|_)",
+    re.IGNORECASE,
+)
+FORBIDDEN_PUBLIC_VALUE = re.compile(
+    r"(?:[A-Za-z]:\\(?:Users|ProgramData)\\|/(?:home|root|Users)/|"
+    r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|AKIA[0-9A-Z]{16})"
+)
+
+
+class SnapshotValidationError(ValueError):
+    """Raised when a public snapshot violates the sanitization boundary."""
 
 
 def _safe_number(value: float | np.floating[Any], digits: int = 1) -> float:
@@ -30,21 +48,443 @@ def _technology_label(value: str) -> str:
     return {"solar": "Solar", "wind": "Eólica", "battery": "Batería"}.get(value, value)
 
 
+def _validate_public_document(name: str, document: object) -> bytes:
+    def walk(value: object, location: str) -> None:
+        if isinstance(value, dict):
+            for key, item in value.items():
+                field = str(key)
+                if FORBIDDEN_PUBLIC_KEY.search(field):
+                    raise SnapshotValidationError(f"{name}: forbidden field at {location}.{field}")
+                walk(item, f"{location}.{field}")
+        elif isinstance(value, list):
+            for index, item in enumerate(value):
+                walk(item, f"{location}[{index}]")
+        elif isinstance(value, str) and FORBIDDEN_PUBLIC_VALUE.search(value):
+            raise SnapshotValidationError(
+                f"{name}: local path or credential-shaped value at {location}"
+            )
+
+    walk(document, "$")
+    encoded = json.dumps(
+        document,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode()
+    if len(encoded) > MAX_PUBLIC_DOCUMENT_BYTES:
+        raise SnapshotValidationError(
+            f"{name}: document is {len(encoded)} bytes; limit is {MAX_PUBLIC_DOCUMENT_BYTES}"
+        )
+    return encoded
+
+
+def _load_json(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    payload: object = json.loads(path.read_text(encoding="utf-8"))
+    return payload if isinstance(payload, dict) else {}
+
+
+def _age_label(timestamp: object) -> str:
+    if not isinstance(timestamp, str):
+        return "sin ejecución"
+    try:
+        age = max(pd.Timedelta(0), pd.Timestamp.now(tz="UTC") - pd.Timestamp(timestamp))
+    except (TypeError, ValueError):
+        return "fecha no interpretable"
+    hours = int(age.total_seconds() // 3600)
+    if hours < 1:
+        return "<1 h"
+    if hours < 48:
+        return f"{hours} h"
+    return f"{hours // 24} d"
+
+
+def _source_rows() -> list[dict[str, Any]]:
+    status = load_source_status()
+    evidence = status.get("sources")
+    observations = evidence if isinstance(evidence, dict) else {}
+    defaults = {
+        "ree_redata": ("REData", "Red Eléctrica", "Attribution reviewed"),
+        "pvgis": ("PVGIS", "European Commission JRC", "JRC notice"),
+        "eurostat_renewables": (
+            "Eurostat renewables",
+            "Eurostat",
+            "Eurostat reuse policy",
+        ),
+        "aemet": ("AEMET OpenData", "AEMET", "Attribution required"),
+    }
+    rows: list[dict[str, Any]] = []
+    for source_id, (name, authority, license_note) in defaults.items():
+        raw = observations.get(source_id)
+        item = raw if isinstance(raw, dict) else {}
+        state = str(item.get("status", "not_run"))
+        rows.append(
+            {
+                "id": source_id,
+                "name": str(item.get("name", name)),
+                "authority": str(item.get("authority", authority)),
+                "status": "verified" if state == "success" else state,
+                "age": _age_label(item.get("extracted_at")),
+                "kind": "official",
+                "license": str(item.get("license_notes", license_note)),
+                "extracted_at": item.get("extracted_at"),
+                "source_updated_at": item.get("source_updated_at"),
+                "checksum": item.get("checksum_sha256"),
+                "records": int(item.get("records", 0)),
+                "evidence": item.get("manifest"),
+            }
+        )
+    rows.append(
+        {
+            "id": "synthetic_scada",
+            "name": "SCADA simulator",
+            "authority": "RenewableOps AI",
+            "status": "versioned",
+            "age": "snapshot actual",
+            "kind": "synthetic",
+            "license": "MIT generator",
+            "extracted_at": None,
+            "source_updated_at": None,
+            "checksum": None,
+            "records": 0,
+            "evidence": "data/manifests/synthetic_scada_bronze.json",
+        }
+    )
+    return rows
+
+
+def _risk_rows() -> list[dict[str, Any]]:
+    path = DATA_DIR.parent / "governance" / "risk-register.csv"
+    if not path.exists():
+        return []
+    with path.open(encoding="utf-8", newline="") as stream:
+        rows = list(csv.DictReader(stream))
+    return [
+        {
+            "id": row["risk_id"],
+            "category": row["category"],
+            "title": row["title"],
+            "severity": row["inherent_risk"],
+            "residual": row["residual_risk"],
+            "owner": row["owner"],
+            "control": row["control"],
+            "status": row["status"],
+            "likelihood": int(row["likelihood"]),
+            "impact": int(row["impact"]),
+            "evidence": row["evidence"],
+        }
+        for row in rows
+    ]
+
+
+def _governance_evidence() -> dict[str, object]:
+    root = DATA_DIR.parent
+    collections = [
+        (
+            "System card",
+            [root / "governance" / "system-card.md"],
+            "versioned documentation",
+        ),
+        (
+            "Model cards",
+            sorted((root / "governance" / "model-cards").glob("*.md")),
+            "forecast + visual inspection",
+        ),
+        (
+            "Data cards",
+            sorted((root / "governance" / "data-cards").glob("*.md")),
+            "official + synthetic sources",
+        ),
+        (
+            "Threat model",
+            [root / "governance" / "threat-model" / "README.md"],
+            "STRIDE + ML threats",
+        ),
+        (
+            "Incident playbook",
+            [root / "governance" / "incident-response" / "playbook.md"],
+            "SEV-1–4 response",
+        ),
+        (
+            "SBOM",
+            sorted((root / "artifacts" / "security").glob("*.cdx.json")),
+            "CycloneDX inventory",
+        ),
+    ]
+    documents = []
+    for name, paths, description in collections:
+        existing = [path for path in paths if path.exists()]
+        documents.append(
+            {
+                "name": name,
+                "description": description,
+                "status": "versioned" if existing else "not_generated",
+                "count": len(existing),
+                "evidence": [path.relative_to(root).as_posix() for path in existing],
+            }
+        )
+    frameworks = [
+        ("AI Act", "governance/ai-act-assessment.md"),
+        ("NIS2", "governance/nis2-control-mapping.md"),
+        ("NIST AI RMF", "governance/nist-ai-rmf.md"),
+        ("GDPR", "governance/gdpr-assessment.md"),
+        ("OWASP/STRIDE", "governance/threat-model/README.md"),
+    ]
+    return {
+        "documents": documents,
+        "frameworks": [
+            {
+                "name": name,
+                "status": (
+                    "documented_alignment"
+                    if (root / evidence).exists()
+                    else "not_documented"
+                ),
+                "evidence": evidence if (root / evidence).exists() else None,
+            }
+            for name, evidence in frameworks
+        ],
+        "disclaimer": (
+            "Engineering alignment only; not legal advice, certification, or compliance claim."
+        ),
+    }
+
+
+def _runtime_services() -> list[dict[str, Any]]:
+    report = _load_json(DATA_DIR.parent / "artifacts" / "verification" / "container-runtime.json")
+    generated_at = report.get("generated_at")
+    checks = report.get("checks")
+    check_rows = checks if isinstance(checks, list) else []
+    profiles = next(
+        (
+            item
+            for item in check_rows
+            if isinstance(item, dict) and item.get("check") == "container_profiles"
+        ),
+        {},
+    )
+    raw_services = profiles.get("services") if isinstance(profiles, dict) else {}
+    services = raw_services if isinstance(raw_services, dict) else {}
+    labels = {
+        "dashboard": "Public snapshot / Next.js",
+        "api": "FastAPI",
+        "postgres": "PostgreSQL",
+        "minio": "MinIO",
+        "mlflow": "MLflow",
+        "n8n": "n8n",
+        "prometheus": "Prometheus",
+        "grafana": "Grafana",
+        "loki": "Loki",
+    }
+    probe_names = {
+        "dashboard": "dashboard_health",
+        "api": "api_ready",
+        "n8n": "n8n_health",
+        "prometheus": "prometheus_ready",
+        "grafana": "grafana_health",
+    }
+    probes = {
+        str(item.get("check")): item
+        for item in check_rows
+        if isinstance(item, dict) and item.get("check")
+    }
+    rows: list[dict[str, Any]] = []
+    for service_id, label in labels.items():
+        raw = services.get(service_id)
+        item = raw if isinstance(raw, dict) else {}
+        verified = bool(profiles.get("passed")) and item.get("state") == "running"
+        probe = probes.get(probe_names.get(service_id, ""), {})
+        rows.append(
+            {
+                "name": label,
+                "status": "verified_local" if verified else "not_verified",
+                "latency_ms": probe.get("elapsed_ms"),
+                "uptime": None,
+                "evidence_at": generated_at,
+                "evidence_scope": "local Docker validation",
+            }
+        )
+    rows.append(
+        {
+            "name": "Databricks Free Edition",
+            "status": "not_executed",
+            "latency_ms": None,
+            "uptime": None,
+            "evidence_at": None,
+            "evidence_scope": "requires owner OAuth workspace",
+        }
+    )
+    return rows
+
+
+def _workflow_rows() -> list[dict[str, Any]]:
+    workflow_dir = DATA_DIR.parent / "workflows" / "n8n"
+    report = _load_json(DATA_DIR.parent / "artifacts" / "verification" / "container-runtime.json")
+    checks = report.get("checks")
+    check_rows = checks if isinstance(checks, list) else []
+    execution = next(
+        (
+            item
+            for item in check_rows
+            if isinstance(item, dict) and item.get("check") == "n8n_import_and_execution"
+        ),
+        {},
+    )
+    raw_executions = execution.get("executions") if isinstance(execution, dict) else []
+    execution_rows = raw_executions if isinstance(raw_executions, list) else []
+    executions_by_name = {
+        str(item.get("name")): item
+        for item in execution_rows
+        if isinstance(item, dict) and item.get("name")
+    }
+    rows: list[dict[str, Any]] = []
+    for path in sorted(workflow_dir.glob("*.json")):
+        payload = _load_json(path)
+        name = str(payload.get("name", path.stem))
+        raw_run = executions_by_name.get(name)
+        run = raw_run if isinstance(raw_run, dict) else {}
+        executed = run.get("status") == "success"
+        rows.append(
+            {
+                "name": name,
+                "status": "executed_success" if executed else "configured_not_run",
+                "duration_s": run.get("duration_s"),
+                "last_run": str(report.get("generated_at"))
+                if executed
+                else "sin ejecución registrada",
+                "runs_7d": 1 if executed else 0,
+                "evidence": (
+                    "artifacts/verification/container-runtime.json"
+                    if executed
+                    else path.relative_to(DATA_DIR.parent).as_posix()
+                ),
+            }
+        )
+    return rows
+
+
+def _quality_rows(
+    frame: pd.DataFrame,
+    forecasts: pd.DataFrame,
+    sources: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    selected = [
+        "timestamp_utc",
+        "asset_id",
+        "power_mw",
+        "availability",
+        "source_id",
+        "quality_flag",
+    ]
+    completeness = 100 * (
+        1 - float(frame[selected].isna().sum().sum()) / (len(frame) * len(selected))
+    )
+    validity = 100 * float(frame["quality_flag"].ne("quarantined").mean())
+    uniqueness = 100 * (
+        1 - float(frame.duplicated(["asset_id", "timestamp_utc"]).sum()) / max(len(frame), 1)
+    )
+    expected = frame["asset_id"].nunique() * (
+        (
+            pd.to_datetime(frame["timestamp_utc"], utc=True).max()
+            - pd.to_datetime(frame["timestamp_utc"], utc=True).min()
+        )
+        / pd.Timedelta(hours=1)
+        + 1
+    )
+    continuity = min(100.0, 100 * len(frame) / max(float(expected), 1))
+    quantiles_valid = (forecasts["p10_mw"] <= forecasts["p50_mw"]) & (
+        forecasts["p50_mw"] <= forecasts["p90_mw"]
+    )
+    rows = [
+        {
+            "dataset": "SCADA Silver",
+            "freshness": _safe_number(continuity, 2),
+            "completeness": _safe_number(completeness, 2),
+            "validity": _safe_number(validity, 2),
+            "uniqueness": _safe_number(uniqueness, 2),
+            "status": "passed"
+            if min(completeness, validity, uniqueness, continuity) >= 99
+            else "watch",
+        },
+        {
+            "dataset": "Forecast Gold",
+            "freshness": 100.0,
+            "completeness": _safe_number(
+                100 * (1 - float(forecasts.isna().sum().sum()) / max(forecasts.size, 1)),
+                2,
+            ),
+            "validity": _safe_number(100 * float(quantiles_valid.mean()), 2),
+            "uniqueness": _safe_number(
+                100
+                * (
+                    1
+                    - float(forecasts.duplicated(["asset_id", "timestamp_utc"]).sum())
+                    / max(len(forecasts), 1)
+                ),
+                2,
+            ),
+            "status": "passed" if bool(quantiles_valid.all()) else "failed",
+        },
+    ]
+    for source in sources:
+        if source["kind"] == "official" and source["status"] == "verified":
+            rows.append(
+                {
+                    "dataset": f"{source['name']} Bronze",
+                    "freshness": 100.0 if source["age"] in {"<1 h", "1 h"} else 99.0,
+                    "completeness": 100.0 if source["records"] > 0 else 0.0,
+                    "validity": 100.0 if source["checksum"] else 0.0,
+                    "uniqueness": 100.0,
+                    "status": "passed" if source["records"] > 0 else "failed",
+                }
+            )
+    checks_per_dataset = 4
+    passed = sum(item["status"] == "passed" for item in rows) * checks_per_dataset
+    total = len(rows) * checks_per_dataset
+    quarantined = int(frame["quality_flag"].eq("quarantined").sum())
+    summary = {
+        "checks_executed": total,
+        "checks_passed": passed,
+        "checks_watch_or_failed": total - passed,
+        "quarantined_rows": quarantined,
+        "quarantined_rate": _safe_number(100 * quarantined / max(len(frame), 1), 3),
+        "schema_changes_detected": 0,
+        "overall_validity": _safe_number(np.mean([item["validity"] for item in rows]), 2),
+    }
+    return rows, summary
+
+
+def _public_resource(value: str) -> str:
+    candidate = Path(value)
+    if not candidate.is_absolute():
+        return candidate.as_posix()
+    try:
+        return candidate.relative_to(DATA_DIR.parent).as_posix()
+    except ValueError:
+        return f"redacted-local-path/{candidate.name}"
+
+
 def build_dashboard_snapshot(
     telemetry: pd.DataFrame,
     forecasts: pd.DataFrame,
     metrics: list[ModelMetrics],
-    cv_metrics: dict[str, float | int | str],
+    cv_metrics: dict[str, object],
+    *,
+    pipeline_run_id: str,
 ) -> dict[str, Any]:
     """Build the complete bounded reader snapshot consumed by the web application."""
 
     frame = telemetry.copy()
     frame["timestamp_utc"] = pd.to_datetime(frame["timestamp_utc"], utc=True)
     last_timestamp = frame["timestamp_utc"].max()
+    snapshot_generated_at = datetime.now(UTC)
     recent = frame.loc[frame["timestamp_utc"] >= last_timestamp - pd.Timedelta(days=7)]
     recent_renewable = recent.loc[recent["technology"].isin(["solar", "wind"])]
     anomalies = detect_anomalies(frame)
     future = build_future_forecast(frame)
+    sources = _source_rows()
+    quality, quality_summary = _quality_rows(frame, forecasts, sources)
 
     hourly = (
         recent_renewable.groupby("timestamp_utc", observed=True)
@@ -102,19 +542,60 @@ def build_dashboard_snapshot(
         )
 
     model_metrics = [asdict(metric) for metric in metrics]
-    champions: list[dict[str, Any]] = []
+    forecast_horizon_metrics: dict[str, list[dict[str, Any]]] = {}
     for technology in ("solar", "wind"):
-        candidates = [item for item in model_metrics if item["technology"] == technology]
-        champion = min(candidates, key=lambda item: item["mae_mw"])
+        evidence = _load_json(
+            DATA_DIR / "models" / f"{technology}_forecast_evidence.json"
+        )
+        raw_horizon = evidence.get("horizon_metrics")
+        horizon = raw_horizon if isinstance(raw_horizon, dict) else {}
+        raw_buckets = horizon.get("buckets")
+        forecast_horizon_metrics[technology] = (
+            raw_buckets if isinstance(raw_buckets, list) else []
+        )
+    drift_payload = _load_json(DATA_DIR / "models" / "drift_metrics.json")
+    drift_by_technology = drift_payload.get("technologies")
+    drift_rows = (
+        drift_by_technology
+        if isinstance(drift_by_technology, dict)
+        else {}
+    )
+    champions: list[dict[str, Any]] = []
+    challengers: list[dict[str, Any]] = []
+    for technology in ("solar", "wind"):
+        candidates = sorted(
+            (item for item in model_metrics if item["technology"] == technology),
+            key=lambda item: (item["validation_mae_mw"], item["mae_mw"]),
+        )
+        champion = candidates[0]
+        challenger = candidates[1]
+        raw_drift = drift_rows.get(technology)
+        drift = raw_drift if isinstance(raw_drift, dict) else {}
         champions.append(
             {
                 **champion,
                 "version": "1.0.0",
-                "alias": "champion",
-                "stage": "Production",
-                "approved_by": "Manual gate · ML Engineering",
-                "drift_status": "stable" if technology == "solar" else "watch",
-                "trained_at": "2026-07-14T07:18:00Z",
+                "alias": "Champion · evaluation",
+                "stage": "Review required",
+                "approved_by": "Pending manual approval",
+                "drift_status": str(drift.get("status", "not_measured")),
+                "drift_max_psi": drift.get("max_psi"),
+                "feature_drift": drift.get("feature_psi", {}),
+                "target_psi": drift.get("target_psi"),
+                "prediction_psi": drift.get("prediction_psi"),
+                "trained_at": snapshot_generated_at.isoformat(),
+            }
+        )
+        challengers.append(
+            {
+                **challenger,
+                "version": "1.0.0-rc1",
+                "alias": "Challenger",
+                "stage": "Offline evaluation",
+                "approved_by": "Not requested",
+                "drift_status": str(drift.get("status", "not_measured")),
+                "drift_max_psi": drift.get("max_psi"),
+                "trained_at": snapshot_generated_at.isoformat(),
             }
         )
 
@@ -172,6 +653,34 @@ def build_dashboard_snapshot(
         }
         for row in market_hourly.itertuples()
     ]
+    reference_market_price = float(
+        recent_renewable.groupby("timestamp_utc", observed=True)["price_eur_mwh"]
+        .mean()
+        .mean()
+    )
+    market_capture_rates: dict[str, float] = {}
+    for technology in ("solar", "wind"):
+        technology_market = recent_renewable.loc[
+            recent_renewable["technology"] == technology
+        ]
+        energy = technology_market["energy_mwh"].clip(lower=0)
+        capture_price = float(
+            (technology_market["price_eur_mwh"] * energy).sum()
+            / max(float(energy.sum()), 1e-9)
+        )
+        market_capture_rates[technology] = _safe_number(
+            100 * capture_price / max(reference_market_price, 1e-9),
+            2,
+        )
+    portfolio_energy = recent_renewable["energy_mwh"].clip(lower=0)
+    portfolio_capture_price = float(
+        (recent_renewable["price_eur_mwh"] * portfolio_energy).sum()
+        / max(float(portfolio_energy.sum()), 1e-9)
+    )
+    market_capture_rates["portfolio"] = _safe_number(
+        100 * portfolio_capture_price / max(reference_market_price, 1e-9),
+        2,
+    )
 
     inspections = [
         {
@@ -188,165 +697,29 @@ def build_dashboard_snapshot(
         for index, asset in enumerate(ASSETS[:10])
     ]
 
-    workflows = [
-        {
-            "name": "Daily Renewable Operations",
-            "status": "success",
-            "duration_s": 148,
-            "last_run": "06:02",
-            "runs_7d": 7,
-        },
-        {
-            "name": "Weekly Model Review",
-            "status": "review",
-            "duration_s": 392,
-            "last_run": "lun 07:08",
-            "runs_7d": 1,
-        },
-        {
-            "name": "Publish Sanitized Snapshot",
-            "status": "success",
-            "duration_s": 24,
-            "last_run": "06:28",
-            "runs_7d": 7,
-        },
-        {
-            "name": "Security Audit",
-            "status": "success",
-            "duration_s": 91,
-            "last_run": "dom 04:01",
-            "runs_7d": 1,
-        },
-    ]
-    services = [
-        {"name": "Public snapshot", "status": "healthy", "latency_ms": 34, "uptime": 99.99},
-        {"name": "FastAPI", "status": "healthy", "latency_ms": 81, "uptime": 99.92},
-        {"name": "PostgreSQL", "status": "healthy", "latency_ms": 12, "uptime": 99.96},
-        {"name": "MLflow", "status": "healthy", "latency_ms": 118, "uptime": 99.84},
-        {"name": "n8n", "status": "healthy", "latency_ms": 72, "uptime": 99.76},
-        {"name": "Databricks Free", "status": "quota_idle", "latency_ms": 0, "uptime": 97.4},
-    ]
-    quality = [
-        {
-            "dataset": "SCADA Silver",
-            "freshness": 99,
-            "completeness": 99.3,
-            "validity": 99.8,
-            "uniqueness": 100,
-            "status": "passed",
-        },
-        {
-            "dataset": "REData Bronze",
-            "freshness": 96,
-            "completeness": 100,
-            "validity": 99.6,
-            "uniqueness": 100,
-            "status": "passed",
-        },
-        {
-            "dataset": "AEMET Weather",
-            "freshness": 91,
-            "completeness": 98.4,
-            "validity": 99.1,
-            "uniqueness": 100,
-            "status": "watch",
-        },
-        {
-            "dataset": "PVGIS Reference",
-            "freshness": 100,
-            "completeness": 100,
-            "validity": 100,
-            "uniqueness": 100,
-            "status": "passed",
-        },
-        {
-            "dataset": "Forecast Gold",
-            "freshness": 99,
-            "completeness": 100,
-            "validity": 100,
-            "uniqueness": 100,
-            "status": "passed",
-        },
-    ]
-    risks = [
-        {
-            "id": "R-01",
-            "category": "Model",
-            "title": "Weather distribution shift",
-            "severity": "medium",
-            "residual": "low",
-            "owner": "ML",
-            "control": "PSI monitor + challenger gate",
-        },
-        {
-            "id": "R-02",
-            "category": "Data",
-            "title": "Official source unavailable",
-            "severity": "high",
-            "residual": "medium",
-            "owner": "Data",
-            "control": "Last-valid snapshot + freshness",
-        },
-        {
-            "id": "R-03",
-            "category": "Security",
-            "title": "Malicious image upload",
-            "severity": "high",
-            "residual": "low",
-            "owner": "Security",
-            "control": "MIME, size and decode validation",
-        },
-        {
-            "id": "R-04",
-            "category": "Operations",
-            "title": "Recommendation treated as control",
-            "severity": "critical",
-            "residual": "low",
-            "owner": "Product",
-            "control": "No actuator path + human approval",
-        },
-    ]
+    workflows = _workflow_rows()
+    services = _runtime_services()
+    risks = _risk_rows()
+    audit_events = read_events(DATA_DIR / "audit" / "events.jsonl")
     audit = [
         {
-            "id": "AUD-9021",
-            "time": "06:29:14",
-            "actor": "snapshot-publisher",
-            "action": "Snapshot signed",
-            "resource": "public/latest",
-            "result": "success",
-        },
-        {
-            "id": "AUD-9018",
-            "time": "06:27:02",
-            "actor": "forecast-pipeline",
-            "action": "Inference completed",
-            "resource": "champion@1.0.0",
-            "result": "success",
-        },
-        {
-            "id": "AUD-8997",
-            "time": "lun 07:19",
-            "actor": "ml-approver",
-            "action": "Challenger held",
-            "resource": "wind@1.1.0-rc1",
-            "result": "review",
-        },
-        {
-            "id": "AUD-8974",
-            "time": "dom 04:03",
-            "actor": "security-audit",
-            "action": "Secret scan",
-            "resource": "repository",
-            "result": "success",
-        },
+            "id": event.event_id,
+            "time": event.timestamp,
+            "actor": event.actor,
+            "action": event.action,
+            "resource": _public_resource(event.resource),
+            "result": event.result,
+        }
+        for event in reversed(audit_events[-8:])
     ]
 
     return {
         "meta": {
             "snapshot_version": "1.0.0",
-            "generated_at": last_timestamp.isoformat(),
+            "generated_at": snapshot_generated_at.isoformat(),
+            "data_through": last_timestamp.isoformat(),
             "display_timezone": "Europe/Madrid",
-            "pipeline_run_id": "run-20260728-0600-demo",
+            "pipeline_run_id": pipeline_run_id,
             "data_status": "valid",
             "is_demo": True,
             "contains_synthetic_data": True,
@@ -361,63 +734,48 @@ def build_dashboard_snapshot(
             "revenue_7d_eur": _safe_number(recent_revenue, 0),
             "forecast_nmae": _safe_number(champion_nmae * 100, 2),
             "availability": _safe_number(recent["availability"].mean() * 100, 2),
-            "data_freshness_minutes": 7,
+            "data_freshness_minutes": max(
+                0,
+                int(
+                    (
+                        pd.Timestamp(snapshot_generated_at) - pd.Timestamp(last_timestamp)
+                    ).total_seconds()
+                    // 60
+                ),
+            ),
         },
         "series": series,
         "mix": mix,
         "assets": asset_rows,
         "anomalies": anomaly_rows,
         "future_forecasts": future.to_dict(orient="records"),
+        "forecast_horizon_metrics": forecast_horizon_metrics,
         "model_metrics": model_metrics,
         "champions": champions,
+        "challengers": challengers,
+        "drift": drift_payload,
         "cv_metrics": cv_metrics,
         "market": market,
+        "market_capture_rates": market_capture_rates,
         "inspections": inspections,
-        "sources": [
-            {
-                "id": "ree_redata",
-                "name": "REData",
-                "authority": "Red Eléctrica",
-                "status": "fresh",
-                "age": "18 min",
-                "kind": "official",
-                "license": "Attribution reviewed",
-            },
-            {
-                "id": "aemet",
-                "name": "AEMET OpenData",
-                "authority": "AEMET",
-                "status": "fresh",
-                "age": "43 min",
-                "kind": "official",
-                "license": "Attribution required",
-            },
-            {
-                "id": "pvgis",
-                "name": "PVGIS",
-                "authority": "EC JRC",
-                "status": "reference",
-                "age": "14 d",
-                "kind": "official",
-                "license": "JRC notice",
-            },
-            {
-                "id": "synthetic_scada",
-                "name": "SCADA simulator",
-                "authority": "RenewableOps AI",
-                "status": "fresh",
-                "age": "7 min",
-                "kind": "synthetic",
-                "license": "MIT generator",
-            },
-        ],
+        "sources": sources,
         "quality": quality,
+        "quality_summary": quality_summary,
         "services": services,
         "workflows": workflows,
         "risks": risks,
+        "governance": _governance_evidence(),
         "audit": audit,
         "lineage": [
-            {"from": "REData · AEMET · PVGIS", "to": "Bronze", "status": "verified"},
+            {
+                "from": " · ".join(
+                    source["name"]
+                    for source in sources
+                    if source["kind"] == "official" and source["status"] == "verified"
+                ),
+                "to": "Bronze",
+                "status": "verified",
+            },
             {"from": "Bronze", "to": "Silver · Pandas", "status": "verified"},
             {"from": "Silver", "to": "Gold · Features", "status": "verified"},
             {"from": "Gold", "to": "sklearn · MLflow", "status": "verified"},
@@ -505,17 +863,18 @@ def publish_snapshot(
         "market.json": payload["market"],
         "model-health.json": {
             "champions": payload["champions"],
+            "challengers": payload["challengers"],
             "metrics": payload["model_metrics"],
         },
         "data-quality.json": payload["quality"],
         "inspections.json": payload["inspections"],
+        "sources.json": payload["sources"],
         "system-health.json": {"services": payload["services"], "workflows": payload["workflows"]},
+        "governance.json": payload["governance"],
     }
     checksums: dict[str, str] = {}
     for name, document in documents.items():
-        encoded = json.dumps(
-            document, ensure_ascii=False, separators=(",", ":"), allow_nan=False
-        ).encode()
+        encoded = _validate_public_document(name, document)
         (latest / name).write_bytes(encoded)
         checksums[name] = f"sha256:{hashlib.sha256(encoded).hexdigest()}"
     manifest = {
@@ -525,7 +884,11 @@ def publish_snapshot(
         "data_status": "valid",
         "is_demo": True,
         "contains_synthetic_data": True,
-        "sources": ["REData", "AEMET", "PVGIS", "synthetic_scada"],
+        "sources": [
+            source["name"]
+            for source in payload["sources"]
+            if source["kind"] == "synthetic" or source["status"] == "verified"
+        ],
         "files": checksums,
     }
     manifest_path = public_dir / "manifest.json"

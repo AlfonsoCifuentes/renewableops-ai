@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-28T20:54:42.757088+00:00",
+  "generated_at": "2026-07-29T10:56:46.650718+00:00",
   "scope": "live local Docker core + monitoring profiles",
   "status": "passed",
   "checks": [
@@ -58,30 +58,35 @@
       "check": "api_ready",
       "passed": true,
       "status": 200,
+      "elapsed_ms": 46.09,
       "body": "{\"status\":\"ready\",\"snapshot\":true,\"models\":true}"
     },
     {
       "check": "dashboard_health",
       "passed": true,
       "status": 200,
+      "elapsed_ms": 6.39,
       "body": "{\"status\":\"healthy\",\"service\":\"renewableops-dashboard\"}"
     },
     {
       "check": "n8n_health",
       "passed": true,
       "status": 200,
+      "elapsed_ms": 3.05,
       "body": "{\"status\":\"ok\"}"
     },
     {
       "check": "grafana_health",
       "passed": true,
       "status": 200,
+      "elapsed_ms": 1.86,
       "body": "{\n  \"database\": \"ok\",\n  \"version\": \"12.1.0\",\n  \"commit\": \"ccd7b6ce7ea6184b8c7eb1de044174147dd9a648\"\n}"
     },
     {
       "check": "prometheus_ready",
       "passed": true,
       "status": 200,
+      "elapsed_ms": 12.54,
       "body": "Prometheus Server is Ready.\n"
     },
     {
@@ -102,8 +107,59 @@
     {
       "check": "n8n_import_and_execution",
       "passed": true,
-      "imported_workflows": 8,
-      "latest_execution_status": "success"
+      "imported_workflows": 13,
+      "latest_execution_status": "success",
+      "successful_workflows": 6,
+      "executions": [
+        {
+          "id": "renewableops-daily",
+          "name": "Daily Renewable Operations",
+          "status": "success",
+          "duration_s": 4.032,
+          "return_code": 0,
+          "error_type": null
+        },
+        {
+          "id": "renewableops-demo-scenarios",
+          "name": "Demo Scenarios",
+          "status": "success",
+          "duration_s": 3.325,
+          "return_code": 0,
+          "error_type": null
+        },
+        {
+          "id": "renewableops-incident-response",
+          "name": "Incident Response",
+          "status": "success",
+          "duration_s": 2.815,
+          "return_code": 0,
+          "error_type": null
+        },
+        {
+          "id": "renewableops-publish-snapshots",
+          "name": "Publish Sanitized Snapshots",
+          "status": "success",
+          "duration_s": 3.4,
+          "return_code": 0,
+          "error_type": null
+        },
+        {
+          "id": "renewableops-security-audit",
+          "name": "Security Audit",
+          "status": "success",
+          "duration_s": 2.848,
+          "return_code": 0,
+          "error_type": null
+        },
+        {
+          "id": "renewableops-weekly-model-review",
+          "name": "Weekly Model Review",
+          "status": "success",
+          "duration_s": 3.313,
+          "return_code": 0,
+          "error_type": null
+        }
+      ]
     }
   ]
 }

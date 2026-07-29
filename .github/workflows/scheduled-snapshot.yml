@@ -3,22 +3,35 @@ name: Scheduled public snapshot
 on:
   workflow_dispatch:
   schedule:
-    - cron: "17 5 * * 1"
+    - cron: "17 5 * * *"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   snapshot:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.12"
       - run: uv sync --locked
-      - run: uv run renewableops run-demo --days 90
+      - run: uv run renewableops ingest
+      - run: uv run renewableops publish
       - run: uv run python scripts/verify_environment.py
+      - name: Commit validated snapshot
+        shell: bash
+        run: |
+          git config user.name "renewableops-snapshot[bot]"
+          git config user.email "renewableops-snapshot[bot]@users.noreply.github.com"
+          git add apps/dashboard/public/data data/manifests data/lakehouse/bronze/official artifacts/verification/report.json
+          if ! git diff --cached --quiet; then
+            git commit -m "data: refresh verified public snapshot"
+            git push
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: renewableops-public-snapshot

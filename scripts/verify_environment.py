@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sqlite3
 import sys
 from datetime import UTC, datetime
@@ -78,18 +79,44 @@ def main() -> int:
         )
 
     manifest_dir = ROOT / "data/manifests"
-    manifests = sorted(manifest_dir.glob("*.json"))
+    manifests = sorted(
+        [
+            *manifest_dir.glob("*_bronze.json"),
+            *manifest_dir.glob("*_silver.json"),
+            *manifest_dir.glob("*_gold.json"),
+            *manifest_dir.glob("official_*.json"),
+        ]
+    )
+    expected_dataset_ids = {
+        "synthetic_scada_bronze",
+        "generation_silver",
+        "forecast_evaluation_gold",
+        "ree_redata_bronze",
+        "pvgis_bronze",
+        "eurostat_renewables_bronze",
+    }
     manifest_valid = True
+    manifest_ids: set[str] = set()
     for path in manifests:
         payload = json.loads(path.read_text(encoding="utf-8"))
+        manifest_ids.add(str(payload["dataset_id"]))
         artifact_name = {
             "synthetic_scada_bronze": bronze_path,
             "generation_silver": silver_path,
             "forecast_evaluation_gold": gold_path,
         }.get(payload["dataset_id"])
+        artifact_relative = payload.get("artifact")
+        if artifact_relative:
+            artifact_name = ROOT / str(artifact_relative)
         if artifact_name and payload["content_hash"] != f"sha256:{sha256(artifact_name)}":
             manifest_valid = False
-    results.append(check("manifest_hashes", len(manifests) == 3 and manifest_valid, len(manifests)))
+    results.append(
+        check(
+            "manifest_hashes",
+            manifest_ids == expected_dataset_ids and manifest_valid,
+            {"datasets": sorted(manifest_ids), "valid": manifest_valid},
+        )
+    )
 
     source_registry = yaml.safe_load(
         (ROOT / "data/source_registry.yaml").read_text(encoding="utf-8")
@@ -97,13 +124,39 @@ def main() -> int:
     official_sources = [
         source
         for source in source_registry["sources"]
-        if source["source_id"] in {"ree_redata", "pvgis", "aemet"}
+        if source["source_id"] in {"ree_redata", "pvgis", "eurostat_renewables"}
     ]
     results.append(
         check(
             "official_source_registry",
             len(official_sources) == 3 and all(source["enabled"] for source in official_sources),
             [source["source_id"] for source in official_sources],
+        )
+    )
+    source_status_path = manifest_dir / "source_status.json"
+    source_status = (
+        json.loads(source_status_path.read_text(encoding="utf-8"))
+        if source_status_path.exists()
+        else {}
+    )
+    source_evidence = source_status.get("sources", {})
+    required_source_ids = {"ree_redata", "pvgis", "eurostat_renewables"}
+    successful_source_ids = {
+        source_id
+        for source_id, evidence in source_evidence.items()
+        if source_id in required_source_ids
+        and isinstance(evidence, dict)
+        and evidence.get("status") == "success"
+    }
+    results.append(
+        check(
+            "official_source_ingestion",
+            source_status.get("status") == "passed"
+            and successful_source_ids == required_source_ids,
+            {
+                "run_id": source_status.get("run_id"),
+                "successful": sorted(successful_source_ids),
+            },
         )
     )
 
@@ -123,9 +176,15 @@ def main() -> int:
     ]
     cv_model = ROOT / "data/models/cv_solar_champion.joblib"
     model_paths = [*forecast_models, cv_model]
+    cv_artifact = joblib.load(cv_model) if cv_model.exists() else None
+    cv_estimator = (
+        cv_artifact.get("model")
+        if isinstance(cv_artifact, dict)
+        else cv_artifact
+    )
     model_valid = all(
         path.exists() and isinstance(joblib.load(path), dict) for path in forecast_models
-    ) and (cv_model.exists() and hasattr(joblib.load(cv_model), "predict_proba"))
+    ) and (cv_model.exists() and hasattr(cv_estimator, "predict_proba"))
     results.append(check("model_artifacts", model_valid, [path.name for path in model_paths]))
 
     mlflow_database = ROOT / "data/mlflow.db"
@@ -153,7 +212,32 @@ def main() -> int:
     results.append(check("n8n_workflows", workflow_valid and len(workflows) == 6, len(workflows)))
 
     public_manifest = ROOT / "apps/dashboard/public/data/manifest.json"
-    results.append(check("public_snapshot", public_manifest.exists(), str(public_manifest)))
+    public_snapshot_valid = public_manifest.exists()
+    public_snapshot_evidence: dict[str, Any] = {"path": str(public_manifest)}
+    if public_manifest.exists():
+        manifest_payload = json.loads(public_manifest.read_text(encoding="utf-8"))
+        latest = public_manifest.parent / "latest"
+        checksum_valid = all(
+            (latest / filename).exists()
+            and expected == f"sha256:{sha256(latest / filename)}"
+            for filename, expected in manifest_payload.get("files", {}).items()
+        )
+        dashboard_text = (latest / "dashboard.json").read_text(encoding="utf-8")
+        sanitized = not re.search(
+            r"(?:[A-Za-z]:\\(?:Users|ProgramData)\\|/(?:home|root|Users)/|"
+            r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|AKIA[0-9A-Z]{16})",
+            dashboard_text,
+        )
+        public_snapshot_valid &= checksum_valid and sanitized
+        public_snapshot_evidence.update(
+            {
+                "files": len(manifest_payload.get("files", {})),
+                "checksums": checksum_valid,
+                "sanitized": sanitized,
+                "sources": manifest_payload.get("sources", []),
+            }
+        )
+    results.append(check("public_snapshot", public_snapshot_valid, public_snapshot_evidence))
     results.append(
         check(
             "docker_compose",

@@ -6,7 +6,7 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "renewableops/incidents",
-        "responseMode": "responseNode",
+        "responseMode": "lastNode",
         "options": {}
       },
       "id": "incident-webhook",
@@ -17,9 +17,17 @@
       "webhookId": "91d367af-b34d-4b11-aa97-b62a9a94eb80"
     },
     {
+      "parameters": {},
+      "id": "incident-manual",
+      "name": "Manual incident drill",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-420, 120]
+    },
+    {
       "parameters": { "assignments": { "assignments": [
         { "id": "incident", "name": "incident_id", "type": "string", "value": "={{ 'INC-' + $execution.id }}" },
-        { "id": "corr", "name": "correlation_id", "type": "string", "value": "={{ $json.headers['x-correlation-id'] || $execution.id }}" },
+        { "id": "corr", "name": "correlation_id", "type": "string", "value": "={{ $json.headers?.['x-correlation-id'] || $execution.id }}" },
         { "id": "status", "name": "status", "type": "string", "value": "accepted_for_human_review" }
       ] } },
       "id": "incident-context",
@@ -29,20 +37,20 @@
       "position": [-150, 0]
     },
     {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={{ { incident_id: $json.incident_id, status: $json.status, correlation_id: $json.correlation_id } }}",
-        "options": { "responseCode": 202 }
-      },
+      "parameters": { "assignments": { "assignments": [
+        { "id": "result", "name": "result", "type": "string", "value": "incident_recorded" },
+        { "id": "review", "name": "human_review_required", "type": "boolean", "value": true }
+      ] } },
       "id": "incident-response",
       "name": "Acknowledge",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.4,
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
       "position": [100, 0]
     }
   ],
   "connections": {
     "Signed incident webhook": { "main": [[{ "node": "Deduplicate and classify", "type": "main", "index": 0 }]] },
+    "Manual incident drill": { "main": [[{ "node": "Deduplicate and classify", "type": "main", "index": 0 }]] },
     "Deduplicate and classify": { "main": [[{ "node": "Acknowledge", "type": "main", "index": 0 }]] }
   },
   "pinData": {},

@@ -40,8 +40,9 @@ export function Forecasting({
   }, [data.future_forecasts, technology]);
   const metrics = data.model_metrics
     .filter((model) => model.technology === technology)
-    .toSorted((a, b) => a.mae_mw - b.mae_mw);
+    .toSorted((a, b) => a.validation_mae_mw - b.validation_mae_mw);
   const champion = data.champions.find((model) => model.technology === technology);
+  const horizonMetrics = data.forecast_horizon_metrics[technology];
   const labels = forecast.map((point) =>
     new Intl.DateTimeFormat("es-ES", {
       weekday: "short",
@@ -71,12 +72,12 @@ export function Forecasting({
       axisLabel: { ...baseAxis.axisLabel, rotate: 24 },
       splitLine: { show: false },
     },
-    yAxis: { ...baseAxis, type: "value", name: "nMAE", axisLabel: { formatter: (value: number) => `${formatNumber(value * 100)}%` } },
+    yAxis: { ...baseAxis, type: "value", name: "MAE validación · MW" },
     series: [
       {
         type: "bar",
         data: metrics.map((model, index) => ({
-          value: model.nmae,
+          value: model.validation_mae_mw,
           itemStyle: {
             color: index === 0 ? chartTheme.green : "#cbd2cc",
             borderRadius: [3, 3, 0, 0],
@@ -92,7 +93,7 @@ export function Forecasting({
     xAxis: {
       ...baseAxis,
       type: "category",
-      data: ["0–6 h", "7–12 h", "13–18 h", "19–24 h", "25–36 h", "37–48 h"],
+      data: horizonMetrics.map((bucket) => bucket.label),
       splitLine: { show: false },
     },
     yAxis: { ...baseAxis, type: "value", name: "MAE MW" },
@@ -101,9 +102,7 @@ export function Forecasting({
         type: "line",
         symbolSize: 7,
         smooth: 0.3,
-        data: [2.9, 3.4, 3.8, 4.5, 5.2, 6.1].map((value) =>
-          technology === "wind" ? value * 1.18 : value,
-        ),
+        data: horizonMetrics.map((bucket) => bucket.mae_mw),
         lineStyle: { color: chartTheme.rust, width: 2 },
         itemStyle: { color: chartTheme.rust, borderColor: "#fff", borderWidth: 2 },
         areaStyle: { color: "rgba(181,102,61,.08)" },
@@ -155,10 +154,14 @@ export function Forecasting({
         <Chart option={forecastOption} height={350} ariaLabel={`Previsión ${technologyLabel} de 48 horas con intervalos probabilísticos`} />
       </Panel>
       <div className="two-columns">
-        <Panel eyebrow="Evaluación bloqueada" title="Comparativa de candidatos">
-          <Chart option={comparisonOption} height={285} ariaLabel="Comparación nMAE de modelos candidatos" />
+        <Panel eyebrow="Selección temporal · 3 folds" title="Comparativa de candidatos">
+          <Chart option={comparisonOption} height={285} ariaLabel="Comparación del MAE de validación de modelos candidatos" />
         </Panel>
-        <Panel eyebrow="Robustez temporal" title="Error por horizonte">
+        <Panel
+          eyebrow="Test bloqueado · primeras 48 h"
+          title="Error por horizonte"
+          action={<Badge tone="neutral">P50 entrenado</Badge>}
+        >
           <Chart option={residualOption} height={285} ariaLabel="Error del modelo por horizonte de predicción" />
         </Panel>
       </div>

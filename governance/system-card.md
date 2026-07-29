@@ -4,7 +4,7 @@
 
 - Version: 1.0.0
 - Owner: Operations Analytics
-- Review date: 2026-07-28
+- Review date: 2026-07-29
 - Classification: public portfolio demonstration
 
 ## Purpose
@@ -20,15 +20,17 @@ trading y no aprueba mantenimiento.
 
 ## Data
 
-SCADA, fallos, imágenes de benchmark y portfolio son sintéticos/ficticios. Las
-llamadas reales a REData/PVGIS son pequeñas, con procedencia, fecha y checksum.
-No se requiere información personal.
+SCADA, fallos y portfolio son sintéticos/ficticios. El benchmark visual ELPV
+contiene imágenes reales públicas de electroluminiscencia bajo CC BY-NC-SA 4.0.
+Las extracciones de REData, PVGIS y Eurostat son pequeñas y conservan
+procedencia, fecha, checksum y estado. No se requiere información personal.
 
 ## Models
 
 Forecasting sklearn por tecnología, anomalías multicapa y visión clásica
-calibrada. La validación es temporal; los intervalos son empíricos. El registry
-exige aliases, gates y aprobación.
+calibrada. La selección usa TimeSeriesSplit y un test final bloqueado; los
+intervalos P10/P50/P90 proceden de regresores cuantílicos entrenados. El
+registry exige aliases, gates y aprobación humana.
 
 ## Human oversight
 
@@ -56,9 +58,10 @@ playbooks. Public demo no equivale a diseño productivo autenticado.
 
 ## Limitations
 
-No existe validación en una planta real, el benchmark visual usa texturas
-sintéticas y la optimización de batería es heurística. AI Act/NIS2/GDPR son un
-mapeo de ingeniería, no certificación ni asesoramiento.
+No existe validación en una planta real; ELPV no representa cámaras,
+iluminación ni prevalencias del dominio objetivo, y su licencia restringe el
+uso comercial. La optimización de batería es heurística. AI Act/NIS2/GDPR son
+un mapeo de ingeniería, no certificación ni asesoramiento.
 
 ## Approval
 

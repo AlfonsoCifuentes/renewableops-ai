@@ -6,6 +6,7 @@ import base64
 import json
 import os
 import subprocess
+import time
 import urllib.request
 from datetime import UTC, datetime
 from pathlib import Path
@@ -15,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def _http(name: str, url: str) -> dict[str, Any]:
+    started = time.perf_counter()
     try:
         with urllib.request.urlopen(url, timeout=5) as response:
             body = response.read(300).decode("utf-8", errors="replace")
@@ -22,10 +24,16 @@ def _http(name: str, url: str) -> dict[str, Any]:
                 "check": name,
                 "passed": response.status == 200,
                 "status": response.status,
+                "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
                 "body": body,
             }
     except Exception as error:  # noqa: BLE001 - verification reports bounded failure details
-        return {"check": name, "passed": False, "error": type(error).__name__}
+        return {
+            "check": name,
+            "passed": False,
+            "elapsed_ms": round((time.perf_counter() - started) * 1000, 2),
+            "error": type(error).__name__,
+        }
 
 
 def _prometheus_targets() -> dict[str, Any]:
@@ -69,7 +77,9 @@ def _grafana_dashboard() -> dict[str, Any]:
 def _n8n_database() -> dict[str, Any]:
     query = (
         "SELECT (SELECT count(*) FROM workflow_entity),"
-        "COALESCE((SELECT status FROM execution_entity ORDER BY id DESC LIMIT 1),'none');"
+        "COALESCE((SELECT status FROM execution_entity ORDER BY id DESC LIMIT 1),'none'),"
+        "(SELECT count(DISTINCT \"workflowId\") FROM execution_entity "
+        "WHERE status='success');"
     )
     completed = subprocess.run(
         [
@@ -92,11 +102,32 @@ def _n8n_database() -> dict[str, Any]:
     fields = output.split("|")
     count = int(fields[0]) if fields and fields[0].isdigit() else 0
     status = fields[1] if len(fields) > 1 else "unknown"
+    successful_workflows = int(fields[2]) if len(fields) > 2 and fields[2].isdigit() else 0
+    execution_report_path = ROOT / "artifacts" / "verification" / "n8n-executions.json"
+    execution_report: object = (
+        json.loads(execution_report_path.read_text(encoding="utf-8"))
+        if execution_report_path.exists()
+        else {}
+    )
+    execution_rows = (
+        execution_report.get("executions", [])
+        if isinstance(execution_report, dict)
+        else []
+    )
     return {
         "check": "n8n_import_and_execution",
-        "passed": completed.returncode == 0 and count >= 6 and status == "success",
+        "passed": (
+            completed.returncode == 0
+            and count >= 6
+            and status == "success"
+            and successful_workflows >= 6
+            and isinstance(execution_report, dict)
+            and execution_report.get("status") == "passed"
+        ),
         "imported_workflows": count,
         "latest_execution_status": status,
+        "successful_workflows": successful_workflows,
+        "executions": execution_rows,
     }
 
 

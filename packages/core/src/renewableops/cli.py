@@ -4,43 +4,53 @@ from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 
-from .pipeline import run_demo_pipeline
-from .sources import fetch_aemet, fetch_pvgis, fetch_redata
+from .config import PROJECT_ROOT
+from .ingestion import ingest_official_sources
+from .pipeline import refresh_public_snapshot, run_demo_pipeline
+from .synthetic import write_scada_profile
 
 
 def _ingest() -> dict[str, object]:
-    results: dict[str, object] = {}
-    for name, fetcher in (
-        ("ree_redata", fetch_redata),
-        ("pvgis", fetch_pvgis),
-        ("aemet", fetch_aemet),
-    ):
-        try:
-            payload = fetcher()
-            results[name] = {
-                "status": "success",
-                "checksum": payload.checksum_sha256,
-                "extracted_at": payload.extracted_at,
-            }
-        except Exception as error:  # noqa: BLE001 - CLI reports bounded source failures
-            results[name] = {
-                "status": "fallback",
-                "reason": str(error),
-                "data_used": "versioned demo fixture / synthetic reference",
-            }
-    return results
+    return ingest_official_sources()
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(prog="renewableops")
     parser.add_argument(
         "command",
-        choices=["run-demo", "seed", "transform", "train", "publish", "ingest"],
+        choices=[
+            "run-demo",
+            "seed",
+            "transform",
+            "train",
+            "publish",
+            "ingest",
+            "generate-scale",
+        ],
     )
     parser.add_argument("--days", type=int, default=90)
+    parser.add_argument("--frequency", default="5min")
+    parser.add_argument("--output", default="data/scale/scada_5min_2y")
     args = parser.parse_args()
-    result = _ingest() if args.command == "ingest" else run_demo_pipeline(days=args.days)
+    if args.command == "ingest":
+        result = _ingest()
+    elif args.command == "generate-scale":
+        output = (PROJECT_ROOT / Path(args.output)).resolve()
+        try:
+            output.relative_to(PROJECT_ROOT)
+        except ValueError as error:
+            raise SystemExit("--output must stay inside the project workspace") from error
+        result = write_scada_profile(
+            output,
+            days=args.days,
+            frequency=args.frequency,
+        )
+    elif args.command == "publish":
+        result = refresh_public_snapshot()
+    else:
+        result = run_demo_pipeline(days=args.days)
     print(json.dumps(result, indent=2, default=str))
 
 

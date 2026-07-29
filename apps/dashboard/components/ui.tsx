@@ -98,9 +98,17 @@ export function Badge({
 }
 
 export function StatusDot({ status }: { status: string }) {
-  const tone = ["healthy", "success", "fresh", "passed", "online", "verified"].includes(
-    status,
-  )
+  const tone = [
+    "healthy",
+    "success",
+    "fresh",
+    "passed",
+    "online",
+    "verified",
+    "verified_local",
+    "executed_success",
+    "versioned",
+  ].includes(status)
     ? "success"
     : ["critical", "failed", "offline"].includes(status)
       ? "critical"

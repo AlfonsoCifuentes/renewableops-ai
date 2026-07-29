@@ -1,0 +1,18 @@
+{
+  "dataset_id": "pvgis_bronze",
+  "dataset_version": "2026-07-29T09:31:04.987336+00:00",
+  "run_id": "ingest-20260729T093102Z-8de154f4",
+  "source_ids": [
+    "pvgis"
+  ],
+  "row_count": 228,
+  "source_updated_at": null,
+  "schema_hash": "sha256:eb4fc00aba9d0281a741c1ba352d959018b79369a94930dffef10cbd6159c4cf",
+  "payload_hash": "sha256:577ab4f9040ec12c75a110d1227fb6e3760d617c984ca1bf0c8fa6ea8797f4bb",
+  "content_hash": "sha256:5468bb2507991fb7795d0b6a78b62887408b693667b45a8329a15188eb2483e5",
+  "code_commit": "1ce80160aed7e3d5eff56ff184148ba01898edc5",
+  "quality_status": "passed",
+  "artifact": "data/lakehouse/bronze/official/pvgis/extraction_date=2026-07-29/run_id=ingest-20260729T093102Z-8de154f4/payload.json",
+  "attribution": "European Commission, Joint Research Centre",
+  "license_notes": "Cite PVGIS and JRC; review dataset-specific notices"
+}

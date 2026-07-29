@@ -1,0 +1,467 @@
+{
+  "source_id": "ree_redata",
+  "requested_url": "https://apidatos.ree.es/es/datos/generacion/estructura-generacion?start_date=2025-07-20T00%3A00&end_date=2025-07-21T23%3A59&time_trunc=day",
+  "status_code": 200,
+  "extracted_at": "2026-07-29T09:31:04.119437+00:00",
+  "source_updated_at": "2026-06-04T16:19:07.000+02:00",
+  "payload_checksum_sha256": "e70ac4810ec081284eef73ff2500dabc9756e6aea128fa231ceaa8ed62ef2fdd",
+  "schema_fingerprint_sha256": "246fa9d6ff5db5b7f7f2008e772cde416de516f1a75c7a91abf79cfc4202c438",
+  "request_id": "62c0b1a4-08fa-4539-8c57-6db27ad21b5d",
+  "run_id": "ingest-20260729T093102Z-8de154f4",
+  "response_headers": {
+    "content-type": "application/json"
+  },
+  "attribution": "Red Eléctrica de España",
+  "license_notes": "Review official reuse terms before redistribution",
+  "payload": {
+    "data": {
+      "type": "Generación por tecnología",
+      "id": "gen1",
+      "attributes": {
+        "title": "Generación por tecnología",
+        "last-update": "2026-06-04T16:19:07.000+02:00",
+        "description": null
+      },
+      "meta": {
+        "cache-control": {
+          "cache": "HIT",
+          "expireAt": "2026-08-28T09:21:56"
+        }
+      }
+    },
+    "included": [
+      {
+        "type": "Hidráulica",
+        "id": "10288",
+        "groupId": "1",
+        "attributes": {
+          "title": "Hidráulica",
+          "description": null,
+          "color": "#0090d1",
+          "icon": null,
+          "type": "Renovable",
+          "magnitude": null,
+          "composite": false,
+          "last-update": "2026-06-04T16:19:03.000+02:00",
+          "values": [
+            {
+              "value": 32188.158,
+              "percentage": 0.022335876558457184,
+              "datetime": "2025-07-20T00:00:00.000+02:00"
+            },
+            {
+              "value": 51870.674,
+              "percentage": 0.03311427739300549,
+              "datetime": "2025-07-21T00:00:00.000+02:00"
+            }
+          ]
+        }
+      },
+      {
+        "type": "Nuclear",
+        "id": "1446",
+        "groupId": "1",
+        "attributes": {
+          "title": "Nuclear",
+          "description": null,
+          "color": "#464394",
+          "icon": null,
+          "type": "No-Renovable",
+          "magnitude": null,
+          "composite": false,
+          "last-update": "2026-06-04T16:19:03.000+02:00",
+          "values": [
+            {
+              "value": 164384.578,
+              "percentage": 0.11406908224826276,
+              "datetime": "2025-07-20T00:00:00.000+02:00"
+            },
+            {
+              "value": 167119.622,
+              "percentage": 0.10668929269595037,
+              "datetime": "2025-07-21T00:00:00.000+02:00"
+            }
+          ]
+        }
+      },
+      {
+        "type": "Carbón",
+        "id": "10289",
+        "groupId": "1",
+        "attributes": {
+          "title": "Carbón",
+          "description": null,
+          "color": "#993300",
+          "icon": null,
+          "type": "No-Renovable",
+          "magnitude": null,
+          "composite": false,
+          "last-update": "2026-06-04T16:19:04.000+02:00",
+          "values": [
+            {
+              "value": 0.122,
+              "percentage": 8.46577471171782e-08,
+              "datetime": "2025-07-20T00:00:00.000+02:00"
+            },
+            {
+              "value": 0.18,
+              "percentage": 1.1491213572318315e-07,
+              "datetime": "2025-07-21T00:00:00.000+02:00"
+            }
+          ]
+        }
+      },
+      {
+        "type": "Motores diésel",
+        "id": "10344",
+        "groupId": "1",
+        "attributes": {
+          "title": "Motores diésel",
+          "description": null,
+          "color": "#8DA69F",
+          "icon": null,
+          "type": "No-Renovable",
+          "magnitude": null,
+          "composite": false,
+          "last-update": "2026-06-04T16:19:04.000+02:00",
+          "values": [
+            {
+              "value": 7408.804,
+              "percentage": 0.0051410873399404785,
+              "datetime": "2025-07-20T00:00:00.000+02:00"
+            },
+            {
+              "value": 7700.436,
+              "percentage": 0.00491596414866492,
+              "datetime": "2025-07-21T00:00:00.000+02:00"
+            }
+          ]
+        }
+      },
+      {
+        "type": "Turbina de gas",
+        "id": "1450",
+        "groupId": "1",
+        "attributes": {
+          "title": "Turbina de gas",
+          "description": null,
+          "color": "#BA0F16",
+          "icon": null,
+          "type": "No-Renovable",
+          "magnitude": null,
+          "composite": false,
+          "last-update": "2026-06-04T16:19:04.000+02:00",
+          "values": [
+            {
+              "value": 2366.083,
+              "percentage": 0.0016418627563299538,
+              "datetime": "2025-07-20T00:00:00.000+02:00"
+            },
+            {
+              "value": 2879.483,
+              "percentage": 0.0018382641183811034,
+              "datetime": "2025-07-21T00:00:00.000+02:00"
+            }
+          ]
+        }
+      },
+      {
+        "type": "Turbina de vapor",
+        "id": "1451",
+        "groupId": "1",
+        "attributes": {
+          "title": "Turbina de vapor",
+          "description": null,
+          "color": "#AF8E00",
+          "icon": null,
+          "type": "No-Renovable",
+          "magnitude": null,
+          "composite": false,
+          "last-update": "2026-06-04T16:19:04.000+02:00",
+          "values": [
+            {
+              "value": 8047.354,
+              "percentage": 0.005584187376183709,
+              "datetime": "2025-07-20T00:00:00.000+02:00"
+            },
+            {
+              "value": 9563.252,
+              "percentage": 0.0061051872876611265,
+              "datetime": "2025-07-21T00:00:00.000+02:00"
+            }
+          ]
+        }
+      },
+      {
+        "type": "Ciclo combinado",
+        "id": "1454",
+        "groupId": "1",
+        "attributes": {
+          "title": "Ciclo combinado",
+          "description": null,
+          "color": "#ffcc66",
+          "icon": null,
+          "type": "No-Renovable",
+          "magnitude": null,
+          "composite": false,
+          "last-update": "2026-06-04T16:19:04.000+02:00",
+          "values": [
+            {
+              "value": 81069.386,
+              "percentage": 0.05625534081092547,
+              "datetime": "2025-07-20T00:00:00.000+02:00"
+            },
+            {
+              "value": 108081.861,
+              "percentage": 0.06899954155803453,
+              "datetime": "2025-07-21T00:00:00.000+02:00"
+            }
+          ]
+        }
+      },
+      {
+        "type": "Hidroeólica",
+        "id": "1455",
+        "groupId": "1",
+        "attributes": {
+          "title": "Hidroeólica",
+          "description": null,
+          "color": "#00FFFF",
+          "icon": null,
+          "type": "Renovable",
+          "magnitude": null,
+          "composite": false,
+          "last-update": "2026-06-04T16:19:04.000+02:00",
+          "values": [
+            {
+              "value": 147.383,
+              "percentage": 0.00010227141592927111,
+              "datetime": "2025-07-20T00:00:00.000+02:00"
+            },
+            {
+              "value": 147.022,
+              "percentage": 9.385895565718795e-05,
+              "datetime": "2025-07-21T00:00:00.000+02:00"
+            }
+          ]
+        }
+      },
+      {
+        "type": "Eólica",
+        "id": "10291",
+        "groupId": "1",
+        "attributes": {
+          "title": "Eólica",
+          "description": null,
+          "color": "#6fb114",
+          "icon": null,
+          "type": "Renovable",
+          "magnitude": null,
+          "composite": false,
+          "last-update": "2026-06-04T16:19:05.000+02:00",
+          "values": [
+            {
+              "value": 185601.073,
+              "percentage": 0.12879154674353221,
+              "datetime": "2025-07-20T00:00:00.000+02:00"
+            },
+            {
+              "value": 123861.944,
+              "percentage": 0.07907355844369618,
+              "datetime": "2025-07-21T00:00:00.000+02:00"
+            }
+          ]
+        }
+      },
+      {
+        "type": "Solar fotovoltaica",
+        "id": "1458",
+        "groupId": "1",
+        "attributes": {
+          "title": "Solar fotovoltaica",
+          "description": null,
+          "color": "#e48500",
+          "icon": null,
+          "type": "Renovable",
+          "magnitude": null,
+          "composite": false,
+          "last-update": "2026-06-04T16:19:05.000+02:00",
+          "values": [
+            {
+              "value": 169300.041,
+              "percentage": 0.11748000047463854,
+              "datetime": "2025-07-20T00:00:00.000+02:00"
+            },
+            {
+              "value": 232533.323,
+              "percentage": 0.1484494487374377,
+              "datetime": "2025-07-21T00:00:00.000+02:00"
+            }
+          ]
+        }
+      },
+      {
+        "type": "Solar térmica",
+        "id": "1459",
+        "groupId": "1",
+        "attributes": {
+          "title": "Solar térmica",
+          "description": null,
+          "color": "#ff0000",
+          "icon": null,
+          "type": "Renovable",
+          "magnitude": null,
+          "composite": false,
+          "last-update": "2026-06-04T16:19:05.000+02:00",
+          "values": [
+            {
+              "value": 23295.873,
+              "percentage": 0.01616537807629426,
+              "datetime": "2025-07-20T00:00:00.000+02:00"
+            },
+            {
+              "value": 24326.347,
+              "percentage": 0.015529958267295831,
+              "datetime": "2025-07-21T00:00:00.000+02:00"
+            }
+          ]
+        }
+      },
+      {
+        "type": "Otras renovables",
+        "id": "10292",
+        "groupId": "1",
+        "attributes": {
+          "title": "Otras renovables",
+          "description": null,
+          "color": "#9a5cbc",
+          "icon": null,
+          "type": "Renovable",
+          "magnitude": null,
+          "composite": false,
+          "last-update": "2026-06-04T16:19:06.000+02:00",
+          "values": [
+            {
+              "value": 10690.357,
+              "percentage": 0.0074182093401504575,
+              "datetime": "2025-07-20T00:00:00.000+02:00"
+            },
+            {
+              "value": 9921.093,
+              "percentage": 0.006333633251879569,
+              "datetime": "2025-07-21T00:00:00.000+02:00"
+            }
+          ]
+        }
+      },
+      {
+        "type": "Cogeneración",
+        "id": "10293",
+        "groupId": "1",
+        "attributes": {
+          "title": "Cogeneración",
+          "description": null,
+          "color": "#cfa2ca",
+          "icon": null,
+          "type": "No-Renovable",
+          "magnitude": null,
+          "composite": false,
+          "last-update": "2026-06-04T16:19:06.000+02:00",
+          "values": [
+            {
+              "value": 30679.534,
+              "percentage": 0.021289018287253037,
+              "datetime": "2025-07-20T00:00:00.000+02:00"
+            },
+            {
+              "value": 39988.145,
+              "percentage": 0.025528461919768486,
+              "datetime": "2025-07-21T00:00:00.000+02:00"
+            }
+          ]
+        }
+      },
+      {
+        "type": "Residuos no renovables",
+        "id": "10294",
+        "groupId": "1",
+        "attributes": {
+          "title": "Residuos no renovables",
+          "description": null,
+          "color": "#666666",
+          "icon": null,
+          "type": "No-Renovable",
+          "magnitude": null,
+          "composite": false,
+          "last-update": "2026-06-04T16:19:07.000+02:00",
+          "values": [
+            {
+              "value": 3172.048,
+              "percentage": 0.002201134733012712,
+              "datetime": "2025-07-20T00:00:00.000+02:00"
+            },
+            {
+              "value": 3148.3885,
+              "percentage": 0.0020099335923406056,
+              "datetime": "2025-07-21T00:00:00.000+02:00"
+            }
+          ]
+        }
+      },
+      {
+        "type": "Residuos renovables",
+        "id": "10295",
+        "groupId": "1",
+        "attributes": {
+          "title": "Residuos renovables",
+          "description": null,
+          "color": "#a0a0a0",
+          "icon": null,
+          "type": "Renovable",
+          "magnitude": null,
+          "composite": false,
+          "last-update": "2026-06-04T16:19:06.000+02:00",
+          "values": [
+            {
+              "value": 2197.556,
+              "percentage": 0.0015249191813429318,
+              "datetime": "2025-07-20T00:00:00.000+02:00"
+            },
+            {
+              "value": 2065.3245,
+              "percentage": 0.0013185047180911966,
+              "datetime": "2025-07-21T00:00:00.000+02:00"
+            }
+          ]
+        }
+      },
+      {
+        "type": "Generación total",
+        "id": "10296",
+        "groupId": "1",
+        "attributes": {
+          "title": "Generación total",
+          "description": null,
+          "color": "#2b2e34",
+          "icon": null,
+          "type": "total",
+          "magnitude": null,
+          "composite": false,
+          "last-update": "2026-06-04T16:19:07.000+02:00",
+          "values": [
+            {
+              "value": 720548.35,
+              "percentage": 1,
+              "datetime": "2025-07-20T00:00:00.000+02:00"
+            },
+            {
+              "value": 783207.095,
+              "percentage": 1,
+              "datetime": "2025-07-21T00:00:00.000+02:00"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

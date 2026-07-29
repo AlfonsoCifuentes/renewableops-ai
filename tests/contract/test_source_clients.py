@@ -2,7 +2,13 @@ from __future__ import annotations
 
 import httpx
 import pytest
-from renewableops.sources import SourceError, fetch_aemet, fetch_pvgis, fetch_redata
+from renewableops.sources import (
+    SourceError,
+    fetch_aemet,
+    fetch_eurostat,
+    fetch_pvgis,
+    fetch_redata,
+)
 
 
 def _client(payload: dict[str, object]) -> httpx.Client:
@@ -13,11 +19,21 @@ def _client(payload: dict[str, object]) -> httpx.Client:
 
 
 def test_redata_records_provenance_without_query_secrets() -> None:
-    with _client({"data": [{"type": "Generación"}]}) as client:
+    with _client(
+        {
+            "data": {
+                "attributes": {
+                    "last-update": "2026-07-28T18:00:00+02:00",
+                }
+            }
+        }
+    ) as client:
         result = fetch_redata(client=client)
     assert result.source_id == "ree_redata"
-    assert "?" not in result.requested_url
+    assert "start_date=" in result.requested_url
     assert len(result.checksum_sha256) == 64
+    assert len(result.schema_fingerprint_sha256) == 64
+    assert result.source_updated_at == "2026-07-28T18:00:00+02:00"
 
 
 def test_pvgis_records_provenance() -> None:
@@ -25,6 +41,22 @@ def test_pvgis_records_provenance() -> None:
         result = fetch_pvgis(client=client)
     assert result.source_id == "pvgis"
     assert result.status_code == 200
+
+
+def test_eurostat_validates_official_dataset_envelope() -> None:
+    with _client(
+        {
+            "version": "2.0",
+            "class": "dataset",
+            "source": "ESTAT",
+            "updated": "14/07/2026 11:00:00",
+            "value": {"0": 25.0},
+        }
+    ) as client:
+        result = fetch_eurostat(client=client)
+    assert result.source_id == "eurostat_renewables"
+    assert "geo=ES" in result.requested_url
+    assert result.source_updated_at == "14/07/2026 11:00:00"
 
 
 def test_aemet_follows_data_url_without_persisting_secret() -> None:
@@ -46,7 +78,7 @@ def test_aemet_follows_data_url_without_persisting_secret() -> None:
         result = fetch_aemet(api_key="test-secret", client=client)
     assert result.source_id == "aemet"
     assert result.payload["records"][0]["indicativo"] == "3195"
-    assert "?" not in result.requested_url
+    assert "token=" not in result.requested_url
     assert "test-secret" not in result.requested_url
 
 

@@ -2,7 +2,7 @@
 
 - Estado: abierto; requiere acción del propietario.
 - Alcance afectado: criterios 25, 26 y 28, y evidencia remota de Unity Catalog.
-- Fecha: 2026-07-28.
+- Última comprobación: 2026-07-29.
 
 ## Bloqueo
 

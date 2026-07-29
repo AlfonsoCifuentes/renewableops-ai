@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-      - run: uv sync --extra dev --extra platform --locked
+      - run: uv sync --extra dev --extra platform --extra cv --locked
       - run: npm ci
       - run: uv run renewableops run-demo --days 90
         env:
@@ -34,6 +34,9 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:ui
       - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - run: uv run python scripts/generate_sbom.py
       - run: docker compose config --quiet
       - run: uv run python scripts/validate_n8n_workflows.py
       - run: uv run python scripts/verify_environment.py
@@ -57,6 +60,8 @@ jobs:
       - run: uv sync --extra dev --locked
       - run: npm ci
       - run: uv run pip-audit
+      - run: uv run bandit -r packages apps/api/src scripts -x tests -lll -q
+      - run: uv run python scripts/scan_secrets.py
       - run: npm audit --audit-level=critical
 
   spark-reconciliation:

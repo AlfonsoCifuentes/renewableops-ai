@@ -1,17 +1,21 @@
 {
-  "generated_at": "2026-07-28T20:56:00Z",
+  "generated_at": "2026-07-29T10:42:00Z",
   "release": "1.0.0",
   "status": "passed_with_external_gate",
   "quality": {
-    "python": {
+    "python_api": {
       "status": "passed",
-      "tests": 26,
-      "warnings": 1,
-      "warning_scope": "Starlette dependency deprecation"
+      "tests": 42,
+      "conditional_skips": 0
+    },
+    "spark_reconciliation": {
+      "status": "passed",
+      "tests": 1,
+      "runtime": "PySpark 4.2.0 / JDK 25"
     },
     "typing": {
       "status": "passed",
-      "checked_source_files": 20
+      "checked_source_files": 22
     },
     "frontend_components": {
       "status": "passed",
@@ -19,22 +23,16 @@
     },
     "browser_e2e": {
       "status": "passed",
-      "tests": 8,
+      "tests": 22,
       "projects": [
-        "desktop",
+        "chromium",
         "mobile"
       ]
     },
-    "accessibility": {
+    "browser_live_e2e": {
       "status": "passed",
-      "axe_version": "4.12.1",
-      "desktop_violations": 0,
-      "mobile_violations": 0
-    },
-    "browser_console": {
-      "status": "passed",
-      "desktop_errors": 0,
-      "mobile_errors": 0
+      "tests": 3,
+      "scope": "UI to FastAPI, model inference, human review, audit and workflow evidence"
     },
     "production_build": {
       "status": "passed",
@@ -43,25 +41,29 @@
     "security": {
       "status": "passed_with_documented_exceptions",
       "python_known_vulnerabilities": 0,
+      "bandit_high_findings": 0,
+      "secret_scan_findings": 0,
       "npm_critical_vulnerabilities": 0,
-      "npm_high_findings": 12,
+      "npm_high_findings_full_tree": 12,
+      "npm_high_findings_runtime": 3,
       "exception_register": "governance/security-exceptions.md"
     }
+  },
+  "data": {
+    "official_sources_executed": 3,
+    "scale_rows": 2522928,
+    "scale_checksums_valid": true,
+    "elpv_images": 2624
   },
   "runtime": {
     "status": "passed",
     "services": 9,
+    "successful_n8n_workflows": 6,
     "evidence": "artifacts/verification/container-runtime.json"
   },
   "platform": {
     "status": "passed",
     "evidence": "artifacts/verification/platform-validation.json"
-  },
-  "demo": {
-    "status": "passed",
-    "duration_seconds": 244.5,
-    "bytes": 3164842,
-    "artifact": "artifacts/demo/renewableops-guided-demo.webm"
   },
   "external_gate": {
     "system": "Databricks",

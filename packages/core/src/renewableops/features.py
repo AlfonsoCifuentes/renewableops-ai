@@ -15,7 +15,9 @@ FEATURE_COLUMNS = [
     "cloud_cover_fraction",
     "wind_speed_ms",
     "availability",
+    "lag_1h_mw",
     "lag_24h_mw",
+    "lag_168h_mw",
     "rolling_24h_mw",
 ]
 
@@ -32,7 +34,9 @@ def build_features(frame: pd.DataFrame) -> pd.DataFrame:
     result["day_sin"] = np.sin(2 * np.pi * day / 365.25)
     result["day_cos"] = np.cos(2 * np.pi * day / 365.25)
     grouped = result.groupby("asset_id", observed=True)["power_mw"]
+    result["lag_1h_mw"] = grouped.shift(1)
     result["lag_24h_mw"] = grouped.shift(24)
+    result["lag_168h_mw"] = grouped.shift(168)
     result["rolling_24h_mw"] = grouped.transform(
         lambda values: values.shift(1).rolling(24, min_periods=6).mean()
     )

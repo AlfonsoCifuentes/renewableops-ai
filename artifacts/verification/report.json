@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-28T20:54:45.795668+00:00",
+  "generated_at": "2026-07-29T10:57:39.070218+00:00",
   "python": "3.12.9 (main, Feb 12 2025, 14:52:31) [MSC v.1942 64 bit (AMD64)]",
   "status": "passed",
   "checks": [
@@ -40,7 +40,17 @@
     {
       "check": "manifest_hashes",
       "passed": true,
-      "evidence": 3
+      "evidence": {
+        "datasets": [
+          "eurostat_renewables_bronze",
+          "forecast_evaluation_gold",
+          "generation_silver",
+          "pvgis_bronze",
+          "ree_redata_bronze",
+          "synthetic_scada_bronze"
+        ],
+        "valid": true
+      }
     },
     {
       "check": "official_source_registry",
@@ -48,8 +58,20 @@
       "evidence": [
         "ree_redata",
         "pvgis",
-        "aemet"
+        "eurostat_renewables"
       ]
+    },
+    {
+      "check": "official_source_ingestion",
+      "passed": true,
+      "evidence": {
+        "run_id": "ingest-20260729T093102Z-8de154f4",
+        "successful": [
+          "eurostat_renewables",
+          "pvgis",
+          "ree_redata"
+        ]
+      }
     },
     {
       "check": "model_registry_aliases",
@@ -69,14 +91,14 @@
       "check": "mlflow_tracking",
       "passed": true,
       "evidence": {
-        "runs": 12
+        "runs": 55
       }
     },
     {
       "check": "audit_chain",
       "passed": true,
       "evidence": {
-        "events": 16,
+        "events": 56,
         "invalid_index": null
       }
     },
@@ -88,7 +110,18 @@
     {
       "check": "public_snapshot",
       "passed": true,
-      "evidence": "E:\\Proyectos\\Webs\\RenewableOpsAI\\apps\\dashboard\\public\\data\\manifest.json"
+      "evidence": {
+        "path": "E:\\Proyectos\\Webs\\RenewableOpsAI\\apps\\dashboard\\public\\data\\manifest.json",
+        "files": 12,
+        "checksums": true,
+        "sanitized": true,
+        "sources": [
+          "REData API",
+          "PVGIS API",
+          "Eurostat renewable energy indicators",
+          "SCADA simulator"
+        ]
+      }
     },
     {
       "check": "docker_compose",

@@ -34,6 +34,9 @@ export function Inspections({ data }: { data: DashboardSnapshot }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [selected, setSelected] = useState<Inspection>(data.inspections[1]);
   const [upload, setUpload] = useState<UploadState>({ status: "idle" });
+  const [reviewState, setReviewState] = useState<
+    { status: "idle" | "loading" | "success" | "error"; message?: string }
+  >({ status: "idle" });
   const classCounts = ["normal", "microcrack", "hotspot", "soiling"].map(
     (label) => data.inspections.filter((item) => item.label === label).length,
   );
@@ -43,11 +46,24 @@ export function Inspections({ data }: { data: DashboardSnapshot }) {
     yAxis: { ...baseAxis, type: "category", data: ["Normal", "Microcrack", "Hotspot", "Soiling"], splitLine: { show: false } },
     series: [{ type: "bar", data: classCounts, barWidth: 17, itemStyle: { color: chartTheme.green, borderRadius: [0, 3, 3, 0] }, label: { show: true, position: "right", color: chartTheme.ink } }],
   };
-  const confidenceOption: EChartsOption = {
-    grid: { left: 44, right: 12, top: 8, bottom: 28 },
-    xAxis: { ...baseAxis, type: "category", data: ["0.5", "0.6", "0.7", "0.8", "0.9", "1.0"], splitLine: { show: false } },
-    yAxis: { ...baseAxis, type: "value", min: 0, max: 1 },
-    series: [{ type: "line", data: [0.48, 0.61, 0.74, 0.82, 0.91, 0.97], smooth: true, lineStyle: { color: chartTheme.blue, width: 2 }, itemStyle: { color: chartTheme.blue } }],
+  const matrix = data.cv_metrics.confusion_matrix ?? [];
+  const classOrder = data.cv_metrics.class_order ?? [];
+  const confusionOption: EChartsOption = {
+    grid: { left: 90, right: 18, top: 14, bottom: 48 },
+    tooltip: { position: "top" },
+    xAxis: { ...baseAxis, type: "category", name: "Predicción", data: classOrder, splitLine: { show: false } },
+    yAxis: { ...baseAxis, type: "category", name: "Real", data: classOrder, splitLine: { show: false } },
+    visualMap: {
+      show: false,
+      min: 0,
+      max: Math.max(1, ...matrix.flat()),
+      inRange: { color: ["#edf2ef", chartTheme.green] },
+    },
+    series: [{
+      type: "heatmap",
+      data: matrix.flatMap((row, y) => row.map((value, x) => [x, y, value])),
+      label: { show: true, color: chartTheme.ink },
+    }],
   };
 
   async function handleFile(file: File) {
@@ -87,12 +103,41 @@ export function Inspections({ data }: { data: DashboardSnapshot }) {
     }
   }
 
+  async function review(action: "approve" | "reject") {
+    setReviewState({ status: "loading" });
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/api/v1/inspections/${selected.inspection_id}/review`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action,
+            reviewer: "demo-reviewer",
+            reason: "Review submitted from the local decision-support interface.",
+          }),
+        },
+      );
+      if (!response.ok) throw new Error(`API ${response.status}`);
+      const payload = (await response.json()) as { audit_event_id: string };
+      setReviewState({
+        status: "success",
+        message: `${action === "approve" ? "Aprobada" : "Rechazada"} · auditoría ${payload.audit_event_id.slice(0, 8)}`,
+      });
+    } catch {
+      setReviewState({
+        status: "error",
+        message: "La revisión no se guardó: el servicio local no está disponible.",
+      });
+    }
+  }
+
   return (
     <>
       <SectionHeader
         eyebrow="Computer vision · Baseline clásico"
         title="Inspecciones visuales"
-        description="HOG, LBP y clasificación calibrada para priorizar revisiones; ninguna decisión crítica es automática."
+        description={`HOG, LBP y clasificación calibrada sobre ${data.cv_metrics.dataset ?? "benchmark versionado"}; ninguna decisión crítica es automática.`}
         actions={
           <button className="button button-primary" type="button" onClick={() => inputRef.current?.click()}>
             <Upload size={15} /> Analizar imagen
@@ -139,7 +184,10 @@ export function Inspections({ data }: { data: DashboardSnapshot }) {
                 key={inspection.inspection_id}
                 type="button"
                 className={`inspection-card ${selected.inspection_id === inspection.inspection_id ? "is-selected" : ""}`}
-                onClick={() => setSelected(inspection)}
+                onClick={() => {
+                  setSelected(inspection);
+                  setReviewState({ status: "idle" });
+                }}
               >
                 <InspectionVisual inspection={inspection} />
                 <div>
@@ -163,18 +211,25 @@ export function Inspections({ data }: { data: DashboardSnapshot }) {
             <p>Imagen sintética de demostración. El resultado permanece en revisión humana antes de crear una orden.</p>
           </div>
           <div className="review-actions">
-            <button type="button" className="button button-secondary">Rechazar</button>
-            <button type="button" className="button button-primary">Aprobar revisión</button>
+            <button type="button" className="button button-secondary" disabled={reviewState.status === "loading"} onClick={() => void review("reject")}>Rechazar</button>
+            <button type="button" className="button button-primary" disabled={reviewState.status === "loading"} onClick={() => void review("approve")}>Aprobar revisión</button>
           </div>
+          {reviewState.message ? <p className={`review-feedback is-${reviewState.status}`} role="status">{reviewState.message}</p> : null}
         </Panel>
       </div>
       <div className="two-columns">
-        <Panel eyebrow="Dataset de demostración" title="Distribución por clase">
+        <Panel eyebrow="Cola sintética de interfaz" title="Distribución por clase">
           <Chart option={classOption} height={255} ariaLabel="Distribución de inspecciones por clase" />
         </Panel>
-        <Panel eyebrow="Calibración" title="Confianza frente a precisión">
-          <Chart option={confidenceOption} height={255} ariaLabel="Curva de calibración del clasificador visual" />
+        <Panel eyebrow="Test bloqueado" title="Matriz de confusión">
+          <Chart option={confusionOption} height={255} ariaLabel="Matriz de confusión del clasificador visual" />
         </Panel>
+      </div>
+      <div className="quality-kpis">
+        <div><span>Balanced accuracy</span><strong>{formatNumber((data.cv_metrics.balanced_accuracy ?? 0) * 100)}%</strong><small>test no usado para selección</small></div>
+        <div><span>Macro F1</span><strong>{formatNumber((data.cv_metrics.macro_f1 ?? 0) * 100)}%</strong><small>{data.cv_metrics.champion?.replaceAll("_", " ")}</small></div>
+        <div><span>PR-AUC</span><strong>{formatNumber((data.cv_metrics.pr_auc ?? 0) * 100)}%</strong><small>clase defectuosa</small></div>
+        <div><span>ROC-AUC</span><strong>{formatNumber((data.cv_metrics.roc_auc ?? 0) * 100)}%</strong><small>{data.cv_metrics.images ?? 0} imágenes · {data.cv_metrics.license}</small></div>
       </div>
     </>
   );

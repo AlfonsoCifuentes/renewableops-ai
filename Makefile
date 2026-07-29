@@ -1,7 +1,7 @@
-.PHONY: bootstrap seed ingest-demo transform train serve dashboard test lint security verify publish-snapshot demo services-up services-down n8n-import n8n-smoke databricks-auth databricks-bootstrap databricks-upload-demo databricks-validate databricks-deploy databricks-run databricks-export-snapshot
+.PHONY: bootstrap seed ingest-demo scale-data transform train serve dashboard test lint security sbom verify publish-snapshot demo services-up services-down n8n-import n8n-smoke databricks-auth databricks-bootstrap databricks-upload-demo databricks-validate databricks-deploy databricks-run databricks-export-snapshot
 
 bootstrap:
-	uv sync --extra dev --extra platform
+	uv sync --extra dev --extra platform --extra cv
 	npm install
 
 seed:
@@ -9,6 +9,9 @@ seed:
 
 ingest-demo:
 	uv run renewableops ingest
+
+scale-data:
+	uv run renewableops generate-scale --days 730 --frequency 5min
 
 transform:
 	uv run renewableops transform
@@ -34,6 +37,11 @@ lint:
 security:
 	uv run pip-audit
 	npm audit --audit-level=critical
+	uv run bandit -r packages apps/api/src scripts -x tests -lll -q
+	uv run python scripts/scan_secrets.py
+
+sbom:
+	uv run python scripts/generate_sbom.py
 
 verify:
 	uv run python scripts/verify_environment.py
@@ -56,8 +64,7 @@ n8n-import:
 	docker compose exec n8n n8n import:workflow --separate --input=/workflows
 
 n8n-smoke:
-	docker compose exec n8n n8n import:workflow --input=/workflows/security_audit.json
-	docker compose exec -e N8N_RUNNERS_ENABLED=false n8n n8n execute --id=renewableops-security-audit --rawOutput
+	uv run python scripts/execute_n8n_workflows.py
 
 databricks-auth:
 	databricks auth login --profile renewableops-free

@@ -22,8 +22,9 @@ from fastapi.responses import JSONResponse, Response
 from PIL import Image, UnidentifiedImageError
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 from renewableops.assets import asset_lookup
+from renewableops.audit import append_event
 from renewableops.battery import optimize_dispatch
-from renewableops.config import MODEL_DIR, PUBLIC_DATA_DIR, Settings
+from renewableops.config import DATA_DIR, MODEL_DIR, PUBLIC_DATA_DIR, Settings
 from renewableops.features import FEATURE_COLUMNS
 from renewableops.vision import inspect_image
 
@@ -32,6 +33,7 @@ from .schemas import (
     BatteryDispatchResponse,
     ForecastRequest,
     ForecastResponse,
+    InspectionReviewRequest,
     ScenarioRequest,
     ScenarioResponse,
 )
@@ -61,7 +63,7 @@ app = FastAPI(
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=False,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type", "X-Correlation-ID", "X-Webhook-Signature"],
@@ -216,15 +218,24 @@ def forecast(request: ForecastRequest) -> ForecastResponse:
     values = request.model_dump()
     installed_capacity = float(values.pop("installed_capacity_mw"))
     values.pop("technology")
+    values["lag_1h_mw"] = values["lag_1h_mw"] or values["lag_24h_mw"]
+    values["lag_168h_mw"] = values["lag_168h_mw"] or values["lag_24h_mw"]
     features = pd.DataFrame([{column: values[column] for column in FEATURE_COLUMNS}])
-    p50 = float(np.clip(artifact["model"].predict(features)[0], 0, installed_capacity))
-    low, high = artifact["residual_quantiles"]
+    point = float(np.clip(artifact["model"].predict(features)[0], 0, installed_capacity))
+    raw_quantiles = np.asarray(
+        [
+            artifact["quantile_models"][label].predict(features)[0]
+            for label in ("p10", "p50", "p90")
+        ],
+        dtype=float,
+    )
+    p10, p50, p90 = np.sort(np.clip(raw_quantiles, 0, installed_capacity))
     return ForecastResponse(
         technology=request.technology,
         model=artifact["model_name"],
-        p10_mw=round(max(0, p50 + low), 4),
-        p50_mw=round(p50, 4),
-        p90_mw=round(min(installed_capacity, p50 + high), 4),
+        p10_mw=round(float(p10), 4),
+        p50_mw=round(point if p10 <= point <= p90 else float(p50), 4),
+        p90_mw=round(float(p90), 4),
     )
 
 
@@ -257,6 +268,23 @@ def run_scenario(request: ScenarioRequest) -> ScenarioResponse:
     run_uuid = uuid.uuid5(uuid.NAMESPACE_URL, scenario_key)
     run_id = f"scn-{run_uuid}"
     affected = asset["capacity_mw"] * request.duration_hours * request.severity / 100 * 0.18
+    audit_event = append_event(
+        DATA_DIR / "audit" / "events.jsonl",
+        actor="scenario-lab",
+        action="INCIDENT_CREATED",
+        resource=run_id,
+        resource_version="1",
+        result="success",
+        correlation_id=str(run_uuid),
+        metadata={
+            "scenario": request.scenario,
+            "asset_id": request.asset_id,
+            "severity": request.severity,
+            "duration_hours": request.duration_hours,
+            "sandbox": True,
+            "reverted": True,
+        },
+    )
     return ScenarioResponse(
         run_id=run_id,
         status="completed",
@@ -264,7 +292,7 @@ def run_scenario(request: ScenarioRequest) -> ScenarioResponse:
         detection_seconds=max(9, 74 - request.severity // 2),
         estimated_mwh_at_risk=round(affected, 2),
         action=action,
-        audit_event_id=f"AUD-{run_uuid.hex[:10].upper()}",
+        audit_event_id=audit_event.event_id,
     )
 
 
@@ -295,6 +323,7 @@ def battery_dispatch(request: BatteryDispatchRequest) -> BatteryDispatchResponse
 
 
 @app.post("/api/v1/inspections", tags=["computer-vision"])
+@app.post("/api/v1/cv/solar/classify", tags=["computer-vision"], include_in_schema=True)
 async def inspect(file: UploadFile = File(...)) -> dict[str, object]:
     if file.content_type not in {"image/png", "image/jpeg", "image/webp"}:
         raise HTTPException(status_code=415, detail="Only PNG, JPEG and WebP are supported")
@@ -311,8 +340,64 @@ async def inspect(file: UploadFile = File(...)) -> dict[str, object]:
     if width * height > 24_000_000:
         raise HTTPException(status_code=413, detail="Decoded image dimensions are too large")
     result = inspect_image(np.asarray(decoded_image))
+    prediction = result.get("prediction")
+    confidence = result.get("confidence")
+    severity = (
+        "high"
+        if isinstance(confidence, float) and confidence >= 0.85 and prediction == "defective"
+        else "medium"
+        if prediction == "defective"
+        else "low"
+    )
     return {
         "inspection_id": f"VIS-{uuid.uuid4()}",
         "filename": Path(file.filename or "upload").name,
+        "predicted_class": prediction,
+        "probability": confidence,
+        "severity": severity,
+        "review_required": result.get("status") != "completed"
+        or prediction == "defective"
+        or (isinstance(confidence, float) and confidence < 0.8),
+        "quality_checks": {
+            "resolution_ok": width >= 32 and height >= 32,
+            "contrast_ok": result.get("status") == "completed",
+        },
         **result,
+    }
+
+
+@app.post("/api/v1/inspections/{inspection_id}/review", tags=["computer-vision"])
+def review_inspection(
+    inspection_id: str,
+    request: InspectionReviewRequest,
+) -> dict[str, object]:
+    if not inspection_id.startswith("VIS-") or len(inspection_id) > 64:
+        raise HTTPException(status_code=422, detail="Invalid inspection_id")
+    if request.action == "correct" and request.corrected_label is None:
+        raise HTTPException(
+            status_code=422,
+            detail="corrected_label is required when action is correct",
+        )
+    correlation_id = f"review-{uuid.uuid4()}"
+    event = append_event(
+        DATA_DIR / "audit" / "events.jsonl",
+        actor=request.reviewer,
+        action="INSPECTION_REVIEWED",
+        resource=inspection_id,
+        resource_version="1",
+        result="success",
+        correlation_id=correlation_id,
+        metadata={
+            "review_action": request.action,
+            "corrected_label": request.corrected_label,
+            "reason_recorded": bool(request.reason),
+            "automatic_retraining": False,
+        },
+    )
+    return {
+        "inspection_id": inspection_id,
+        "review_status": request.action,
+        "corrected_label": request.corrected_label,
+        "audit_event_id": event.event_id,
+        "automatic_retraining": False,
     }

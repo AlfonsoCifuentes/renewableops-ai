@@ -1,0 +1,18 @@
+{
+  "dataset_id": "ree_redata_bronze",
+  "dataset_version": "2026-07-29T09:31:04.119437+00:00",
+  "run_id": "ingest-20260729T093102Z-8de154f4",
+  "source_ids": [
+    "ree_redata"
+  ],
+  "row_count": 32,
+  "source_updated_at": "2026-06-04T16:19:07.000+02:00",
+  "schema_hash": "sha256:246fa9d6ff5db5b7f7f2008e772cde416de516f1a75c7a91abf79cfc4202c438",
+  "payload_hash": "sha256:e70ac4810ec081284eef73ff2500dabc9756e6aea128fa231ceaa8ed62ef2fdd",
+  "content_hash": "sha256:27dfd87271e5f3fac13ff4ad1d7ca42604dfee048203b00457ffcd5cf26cfd7b",
+  "code_commit": "1ce80160aed7e3d5eff56ff184148ba01898edc5",
+  "quality_status": "passed",
+  "artifact": "data/lakehouse/bronze/official/ree_redata/extraction_date=2026-07-29/run_id=ingest-20260729T093102Z-8de154f4/payload.json",
+  "attribution": "Red Eléctrica de España",
+  "license_notes": "Review official reuse terms before redistribution"
+}

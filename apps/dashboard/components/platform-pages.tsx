@@ -13,30 +13,50 @@ import {
   Sparkles,
 } from "lucide-react";
 import type { EChartsOption } from "echarts";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState } from "react";
 
 import { baseAxis, Chart, chartTheme } from "@/components/chart";
 import { SectionHeader } from "@/components/section-header";
 import { Badge, Panel, StatusDot } from "@/components/ui";
-import { formatNumber } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import type { DashboardSnapshot, Scenario } from "@/lib/types";
 
 export function Observability({ data }: { data: DashboardSnapshot }) {
+  const probedServices = data.services.filter(
+    (service): service is typeof service & { latency_ms: number } =>
+      service.latency_ms !== null,
+  );
   const latencyOption: EChartsOption = {
-    grid: { left: 48, right: 12, top: 12, bottom: 28 },
+    grid: { left: 142, right: 20, top: 12, bottom: 28 },
     tooltip: { trigger: "axis" },
-    xAxis: { ...baseAxis, type: "category", data: ["00", "03", "06", "09", "12", "15", "18", "21"], splitLine: { show: false } },
-    yAxis: { ...baseAxis, type: "value", name: "ms" },
-    series: [
-      { name: "P95", type: "line", data: [172, 165, 201, 186, 194, 181, 176, 169], smooth: true, lineStyle: { color: chartTheme.green, width: 2.2 }, itemStyle: { color: chartTheme.green } },
-      { name: "P50", type: "line", data: [62, 58, 71, 65, 69, 63, 61, 59], smooth: true, lineStyle: { color: chartTheme.blue, width: 1.6, type: "dashed" }, itemStyle: { color: chartTheme.blue } },
-    ],
+    xAxis: { ...baseAxis, type: "value", name: "ms" },
+    yAxis: {
+      ...baseAxis,
+      type: "category",
+      data: probedServices.map((service) => service.name),
+      splitLine: { show: false },
+    },
+    series: [{
+      name: "Probe HTTP",
+      type: "bar",
+      data: probedServices.map((service) => service.latency_ms),
+      barWidth: 18,
+      itemStyle: { color: chartTheme.green, borderRadius: [0, 3, 3, 0] },
+      label: { show: true, position: "right", color: chartTheme.ink, formatter: "{c} ms" },
+    }],
   };
+  const executed = data.workflows.filter((workflow) => workflow.status === "executed_success").length;
   const pipelineOption: EChartsOption = {
-    grid: { left: 152, right: 16, top: 10, bottom: 28 },
-    xAxis: { ...baseAxis, type: "value", name: "s" },
-    yAxis: { ...baseAxis, type: "category", data: data.workflows.map((workflow) => workflow.name), splitLine: { show: false } },
-    series: [{ type: "bar", data: data.workflows.map((workflow) => workflow.duration_s), barWidth: 18, itemStyle: { color: chartTheme.greenSoft, borderRadius: [0, 3, 3, 0] } }],
+    grid: { left: 98, right: 16, top: 10, bottom: 28 },
+    xAxis: { ...baseAxis, type: "value", minInterval: 1, name: "workflows" },
+    yAxis: { ...baseAxis, type: "category", data: ["Ejecutado", "Configurado"], splitLine: { show: false } },
+    series: [{
+      type: "bar",
+      data: [executed, data.workflows.length - executed],
+      barWidth: 22,
+      itemStyle: { color: chartTheme.greenSoft, borderRadius: [0, 3, 3, 0] },
+      label: { show: true, position: "right", color: chartTheme.ink },
+    }],
   };
   return (
     <>
@@ -46,17 +66,17 @@ export function Observability({ data }: { data: DashboardSnapshot }) {
           <article key={service.name}>
             <StatusDot status={service.status} />
             <strong>{service.name}</strong>
-            <span>{service.latency_ms ? `${service.latency_ms} ms` : "sin ejecución"}</span>
-            <small>{formatNumber(service.uptime)}% disponibilidad demo</small>
+            <span>{service.latency_ms !== null ? `${service.latency_ms} ms` : "sin probe HTTP"}</span>
+            <small>{service.evidence_at ? `verificado ${formatDate(service.evidence_at, true)}` : service.evidence_scope}</small>
           </article>
         ))}
       </div>
       <div className="two-columns">
-        <Panel eyebrow="FastAPI" title="Latencia de respuesta">
-          <Chart option={latencyOption} height={285} ariaLabel="Latencia P50 y P95 de la API" />
+        <Panel eyebrow="Runtime verificado" title="Latencia de probes HTTP">
+          <Chart option={latencyOption} height={285} ariaLabel="Latencia medida durante la verificación local" />
         </Panel>
-        <Panel eyebrow="Orquestación" title="Duración de workflows">
-          <Chart option={pipelineOption} height={285} ariaLabel="Duración de workflows de operaciones" />
+        <Panel eyebrow="Orquestación" title="Cobertura de ejecución">
+          <Chart option={pipelineOption} height={285} ariaLabel="Workflows configurados y ejecutados con evidencia" />
         </Panel>
       </div>
       <Panel eyebrow="n8n" title="Ejecuciones operativas">
@@ -64,8 +84,8 @@ export function Observability({ data }: { data: DashboardSnapshot }) {
           {data.workflows.map((workflow) => (
             <article key={workflow.name}>
               <StatusDot status={workflow.status} />
-              <div><strong>{workflow.name}</strong><span>{workflow.runs_7d} ejecuciones · última {workflow.last_run}</span></div>
-              <span>{workflow.duration_s}s</span>
+              <div><strong>{workflow.name}</strong><span>{workflow.runs_7d ? `${workflow.runs_7d} ejecución con evidencia` : "configurado · no ejecutado"} · {workflow.last_run}</span></div>
+              <span>{workflow.duration_s !== null ? `${workflow.duration_s}s` : "—"}</span>
               <button type="button" className="icon-button" aria-label={`Ver ${workflow.name}`}><Braces size={15} /></button>
             </article>
           ))}
@@ -73,12 +93,9 @@ export function Observability({ data }: { data: DashboardSnapshot }) {
       </Panel>
       <Panel eyebrow="Logs estructurados" title="Traza correlacionada">
         <pre className="log-view" tabIndex={0}>
-          <code>
-{`06:27:02.118  INFO  forecast.completed   correlation_id=corr-7af2  model=wind@1.0.0
-06:27:02.301  INFO  snapshot.write       correlation_id=corr-7af2  rows=480
-06:27:03.012  INFO  quality.passed       correlation_id=corr-7af2  checks=84
-06:29:14.882  INFO  snapshot.signed      correlation_id=corr-7af2  sha256=8d1c…c03a`}
-          </code>
+          <code>{data.audit.length
+            ? data.audit.map((event) => `${event.time}  ${event.result.toUpperCase().padEnd(8)} ${event.action.padEnd(22)} actor=${event.actor} resource=${event.resource}`).join("\n")
+            : "Sin eventos persistidos. Ejecuta el pipeline para crear la cadena de auditoría."}</code>
         </pre>
       </Panel>
     </>
@@ -94,7 +111,12 @@ export function Governance({ data }: { data: DashboardSnapshot }) {
     series: [{
       type: "scatter",
       symbolSize: (value: number[]) => 14 + value[2] * 3,
-      data: [[2, 2, 2, "R-01"], [3, 3, 3, "R-02"], [1, 4, 4, "R-03"], [0, 4, 5, "R-04"]],
+      data: data.risks.map((risk) => [
+        risk.likelihood - 1,
+        risk.impact - 1,
+        risk.impact,
+        risk.id,
+      ]),
       label: { show: true, formatter: (params: { data: unknown }) => String((params.data as [number, number, number, string])[3]), color: "#fff", fontWeight: 700 },
       itemStyle: { borderColor: "#fff", borderWidth: 2 },
     }],
@@ -113,18 +135,16 @@ export function Governance({ data }: { data: DashboardSnapshot }) {
         </Panel>
         <Panel eyebrow="Evidencias" title="Paquete de gobierno">
           <div className="document-list">
-            {[
-              ["System card", "v1.0 · approved"],
-              ["Model cards", "solar + wind + CV"],
-              ["Data cards", "4 datasets"],
-              ["Threat model", "STRIDE + ML threats"],
-              ["Incident playbooks", "12 procedimientos"],
-              ["SBOM", "CycloneDX · current"],
-            ].map(([title, meta]) => (
-              <button type="button" key={title}>
+            {data.governance.documents.map((document) => (
+              <button type="button" key={document.name}>
                 <FileCheck2 size={16} />
-                <span><strong>{title}</strong><small>{meta}</small></span>
-                <Check size={15} />
+                <span>
+                  <strong>{document.name}</strong>
+                  <small>{document.count} artefacto{document.count === 1 ? "" : "s"} · {document.description}</small>
+                </span>
+                {document.status === "versioned"
+                  ? <Check size={15} />
+                  : <Clock3 size={15} aria-label="Pendiente de generar" />}
               </button>
             ))}
           </div>
@@ -144,15 +164,16 @@ export function Governance({ data }: { data: DashboardSnapshot }) {
         </div>
       </Panel>
       <div className="control-grid">
-        {[
-          ["AI Act", "Intended use, human oversight, logging", "12/12"],
-          ["NIS2", "Risk, incident, continuity, supply chain", "18/20"],
-          ["NIST AI RMF", "Govern, Map, Measure, Manage", "16/16"],
-          ["OWASP ML", "Input, poisoning, supply chain, integrity", "9/10"],
-        ].map(([name, description, score]) => (
-          <article key={name}><span>{name}</span><strong>{score}</strong><p>{description}</p><div><i style={{ width: score === "18/20" || score === "9/10" ? "90%" : "100%" }} /></div></article>
+        {data.governance.frameworks.map((framework) => (
+          <article key={framework.name}>
+            <span>{framework.name}</span>
+            <strong>{framework.status === "documented_alignment" ? "Mapeado" : "Sin evidencia"}</strong>
+            <p>{framework.evidence ?? "No hay documento versionado."}</p>
+            <div><i style={{ width: framework.status === "documented_alignment" ? "100%" : "0%" }} /></div>
+          </article>
         ))}
       </div>
+      <p className="governance-disclaimer">{data.governance.disclaimer}</p>
     </>
   );
 }
@@ -164,6 +185,9 @@ interface ScenarioResult {
   severity: number;
   detectionSeconds: number;
   risk: number;
+  action: string;
+  source: "api" | "offline_preview";
+  audited: boolean;
 }
 
 export function ScenarioLab({ data }: { data: DashboardSnapshot }) {
@@ -183,7 +207,8 @@ export function ScenarioLab({ data }: { data: DashboardSnapshot }) {
   const [duration, setDuration] = useState(12);
   const [seed, setSeed] = useState(42);
   const [result, setResult] = useState<ScenarioResult | null>(null);
-  const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
+  const [scenarioError, setScenarioError] = useState<string | null>(null);
 
   function selectScenario(id: string) {
     const scenario = data.scenarios.find((item) => item.id === id);
@@ -195,11 +220,55 @@ export function ScenarioLab({ data }: { data: DashboardSnapshot }) {
     );
     setAssetId(eligible[0]?.asset_id ?? data.assets[0].asset_id);
     setResult(null);
+    setScenarioError(null);
   }
 
-  function execute() {
+  async function execute() {
     const asset = data.assets.find((item) => item.asset_id === assetId) ?? eligibleAssets[0];
-    startTransition(() => {
+    setIsPending(true);
+    setScenarioError(null);
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000"}/api/v1/scenarios`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            scenario: scenarioId,
+            asset_id: assetId,
+            severity,
+            duration_hours: duration,
+            seed,
+          }),
+        },
+      );
+      if (!response.ok) {
+        throw new Error(`El sandbox rechazó la solicitud (HTTP ${response.status}).`);
+      }
+      const payload = (await response.json()) as {
+        run_id: string;
+        detection_seconds: number;
+        estimated_mwh_at_risk: number;
+        action: string;
+        audit_event_id: string;
+        reverted: boolean;
+      };
+      if (!payload.reverted) throw new Error("El sandbox no confirmó la reversión.");
+      setResult({
+        runId: payload.run_id,
+        scenario: selectedScenario,
+        assetName: asset.name,
+        severity,
+        detectionSeconds: payload.detection_seconds,
+        risk: payload.estimated_mwh_at_risk,
+        action: payload.action,
+        source: "api",
+        audited: Boolean(payload.audit_event_id),
+      });
+    } catch (error) {
+      if (error instanceof TypeError) {
+        // The public snapshot remains useful with the local API powered off.
+        // This preview is labelled and never presented as an audited execution.
       const runHash = Math.abs(
         [...`${scenarioId}:${assetId}:${seed}`].reduce(
           (hash, character) => (hash * 31 + character.charCodeAt(0)) | 0,
@@ -213,8 +282,16 @@ export function ScenarioLab({ data }: { data: DashboardSnapshot }) {
         severity,
         detectionSeconds: Math.max(8, 76 - Math.round(severity / 2)),
         risk: Number((asset.capacity_mw * duration * severity * 0.0018).toFixed(1)),
+        action: selectedScenario.action,
+        source: "offline_preview",
+        audited: false,
       });
-    });
+      } else {
+        setScenarioError(error instanceof Error ? error.message : "No se pudo ejecutar.");
+      }
+    } finally {
+      setIsPending(false);
+    }
   }
 
   return (
@@ -237,9 +314,10 @@ export function ScenarioLab({ data }: { data: DashboardSnapshot }) {
             <label><span>Duración</span><select value={duration} onChange={(event) => setDuration(Number(event.target.value))}><option value={6}>6 horas</option><option value={12}>12 horas</option><option value={24}>24 horas</option><option value={48}>48 horas</option></select></label>
             <label><span>Seed reproducible</span><input type="number" min="1" value={seed} onChange={(event) => setSeed(Number(event.target.value))} /></label>
           </div>
-          <button type="button" className="button button-primary scenario-run" onClick={execute} disabled={isPending}>
+          <button type="button" className="button button-primary scenario-run" onClick={() => void execute()} disabled={isPending}>
             <CirclePlay size={16} /> {isPending ? "Ejecutando…" : "Ejecutar en sandbox"}
           </button>
+          {scenarioError ? <p role="alert" className="form-error">{scenarioError}</p> : null}
         </Panel>
       </div>
       <Panel className={`scenario-output ${result ? "has-result" : ""}`}>
@@ -247,14 +325,20 @@ export function ScenarioLab({ data }: { data: DashboardSnapshot }) {
           <>
             <div className="scenario-result-head">
               <div className="success-seal"><Check size={20} /></div>
-              <div><p className="eyebrow">03 · Resultado</p><h2>Escenario detectado y revertido</h2><span>{result.runId} · auditado</span></div>
-              <Badge tone="success">sandbox limpio</Badge>
+              <div>
+                <p className="eyebrow">03 · Resultado</p>
+                <h2>{result.source === "api" ? "Escenario detectado y revertido" : "Vista previa determinista"}</h2>
+                <span>{result.runId} · {result.audited ? "ejecución API auditada" : "sin ejecución ni auditoría"}</span>
+              </div>
+              <Badge tone={result.source === "api" ? "success" : "warning"}>
+                {result.source === "api" ? "sandbox limpio" : "modo offline"}
+              </Badge>
             </div>
             <div className="scenario-timeline">
               <div><i /><span>00:00</span><strong>Inyección</strong><small>{result.scenario.name} · {result.assetName}</small></div>
               <div><i /><span>+{result.detectionSeconds}s</span><strong>Detección</strong><small>{result.scenario.detection}</small></div>
-              <div><i /><span>+2 min</span><strong>Acción</strong><small>{result.scenario.action}</small></div>
-              <div><i /><span>+4 min</span><strong>Rollback</strong><small>Snapshot base restaurado</small></div>
+              <div><i /><span>+2 min</span><strong>Acción</strong><small>{result.action}</small></div>
+              <div><i /><span>+4 min</span><strong>Rollback</strong><small>{result.source === "api" ? "Snapshot base restaurado" : "No aplicado en modo offline"}</small></div>
             </div>
             <div className="scenario-impact">
               <div><Activity size={16} /><span>Severidad</span><strong>{result.severity}%</strong></div>

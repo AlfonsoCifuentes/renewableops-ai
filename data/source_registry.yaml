@@ -32,7 +32,24 @@ sources:
     owner: data_engineering
     enabled: true
     fallback_source: demo_fixture
-    last_reviewed_at: "2026-07-28"
+    last_reviewed_at: "2026-07-29"
+  - source_id: eurostat_renewables
+    name: Eurostat renewable energy indicators
+    authority: Eurostat
+    base_url: https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0
+    documentation_url: https://ec.europa.eu/eurostat/web/user-guides/data-browser/api-data-access/api-introduction
+    authentication: none
+    secret_name: null
+    license_notes: Reuse under the Eurostat reuse policy with source attribution
+    attribution: Eurostat dataset nrg_ind_ren
+    data_classification: public
+    expected_frequency: annual
+    expected_latency: P1Y
+    schema_version: JSON-stat 2.0
+    owner: data_engineering
+    enabled: true
+    fallback_source: versioned_last_valid_payload
+    last_reviewed_at: "2026-07-29"
   - source_id: aemet
     name: AEMET OpenData
     authority: Agencia Estatal de Meteorología
