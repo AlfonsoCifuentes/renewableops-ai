@@ -9,7 +9,7 @@
   "source_updated_at": "2026-07-14T11:00:00+0200",
   "schema_hash": "sha256:76da895e167acbb9a7b99a9ce2684e505c9667264db74d1f243f3c6324e07ee8",
   "payload_hash": "sha256:86b30dfc06f4e2cfca710c0c9e5e156c5b8d8ae08a76c7e64702e85d58e59408",
-  "content_hash": "sha256:66702db2ab15a37235b04a11e052a79547b8b6051de714a197c61b025a9b7740",
+  "content_hash": "sha256:ff47fd0f245ed9333e05f31ef183a178104224890566a13f7464ae0220bcfe84",
   "code_commit": "1ce80160aed7e3d5eff56ff184148ba01898edc5",
   "quality_status": "passed",
   "artifact": "data/lakehouse/bronze/official/eurostat_renewables/extraction_date=2026-07-29/run_id=ingest-20260729T093102Z-8de154f4/payload.json",

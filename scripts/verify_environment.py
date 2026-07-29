@@ -20,6 +20,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def sha256(path: Path) -> str:
+    if path.suffix.lower() == ".json":
+        canonical = path.read_bytes().replace(b"\r\n", b"\n")
+        return hashlib.sha256(canonical).hexdigest()
     digest = hashlib.sha256()
     with path.open("rb") as stream:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
@@ -97,6 +100,7 @@ def main() -> int:
     }
     manifest_valid = True
     manifest_ids: set[str] = set()
+    manifest_mismatches: list[dict[str, str]] = []
     for path in manifests:
         payload = json.loads(path.read_text(encoding="utf-8"))
         manifest_ids.add(str(payload["dataset_id"]))
@@ -108,13 +112,27 @@ def main() -> int:
         artifact_relative = payload.get("artifact")
         if artifact_relative:
             artifact_name = ROOT / str(artifact_relative)
-        if artifact_name and payload["content_hash"] != f"sha256:{sha256(artifact_name)}":
-            manifest_valid = False
+        if artifact_name:
+            actual_hash = f"sha256:{sha256(artifact_name)}"
+            if payload["content_hash"] != actual_hash:
+                manifest_valid = False
+                manifest_mismatches.append(
+                    {
+                        "dataset_id": str(payload["dataset_id"]),
+                        "artifact": artifact_name.relative_to(ROOT).as_posix(),
+                        "expected": str(payload["content_hash"]),
+                        "actual": actual_hash,
+                    }
+                )
     results.append(
         check(
             "manifest_hashes",
             manifest_ids == expected_dataset_ids and manifest_valid,
-            {"datasets": sorted(manifest_ids), "valid": manifest_valid},
+            {
+                "datasets": sorted(manifest_ids),
+                "valid": manifest_valid,
+                "mismatches": manifest_mismatches,
+            },
         )
     )
 

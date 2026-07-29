@@ -30,9 +30,8 @@ SOURCE_STATUS_PATH = MANIFEST_DIR / "source_status.json"
 def _write_json(path: Path, payload: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(f"{path.suffix}.tmp")
-    temporary.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2, allow_nan=False),
-        encoding="utf-8",
+    temporary.write_bytes(
+        json.dumps(payload, ensure_ascii=False, indent=2, allow_nan=False).encode("utf-8")
     )
     temporary.replace(path)
 

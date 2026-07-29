@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -77,6 +78,11 @@ def test_official_ingestion_persists_bronze_and_status(
         evidence = status["sources"][source_id]
         artifact = tmp_path / evidence["artifact"]
         assert artifact.exists()
+        assert b"\r\n" not in artifact.read_bytes()
         envelope = json.loads(artifact.read_text(encoding="utf-8"))
         assert envelope["source_id"] == source_id
         assert envelope["payload_checksum_sha256"] == "a" * 64
+        manifest = json.loads((tmp_path / evidence["manifest"]).read_text(encoding="utf-8"))
+        assert manifest["content_hash"] == (
+            f"sha256:{hashlib.sha256(artifact.read_bytes()).hexdigest()}"
+        )

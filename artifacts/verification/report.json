@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-29T10:57:39.070218+00:00",
+  "generated_at": "2026-07-29T12:45:24.581689+00:00",
   "python": "3.12.9 (main, Feb 12 2025, 14:52:31) [MSC v.1942 64 bit (AMD64)]",
   "status": "passed",
   "checks": [
@@ -49,7 +49,8 @@
           "ree_redata_bronze",
           "synthetic_scada_bronze"
         ],
-        "valid": true
+        "valid": true,
+        "mismatches": []
       }
     },
     {
