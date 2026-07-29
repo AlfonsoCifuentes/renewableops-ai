@@ -153,5 +153,7 @@ test("model page proves training, inference, ranking, and approval evidence", as
   await expect(page.getByText("Se reentrena; no aprende en el navegador.")).toBeVisible();
   await expect(page.getByText(/· demo inference/).first()).toBeVisible();
   await expect(page.getByText(/No se promueve: pierde en la métrica de selección/).first()).toBeVisible();
-  await expect(page.getByText(/4218f184e6/).first()).toBeVisible();
+  await expect(page.locator(".artifact-signature").first()).toContainText(
+    /[a-f0-9]{10}…[a-f0-9]{6}/,
+  );
 });

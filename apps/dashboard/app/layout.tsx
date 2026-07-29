@@ -55,7 +55,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
+    <html
+      lang="es"
+      className={`${sans.variable} ${mono.variable}`}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
       <body>
         <Script id="renewableops-theme" strategy="beforeInteractive">
           {`try{var t=localStorage.getItem("renewableops-theme");if(t){document.documentElement.dataset.theme=t}}catch(e){}`}
