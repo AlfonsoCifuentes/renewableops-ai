@@ -151,7 +151,7 @@ test("model page proves training, inference, ranking, and approval evidence", as
   await expect(page.getByText("12/12 checks")).toBeVisible();
   await expect(page.getByText(/\d+ runs/)).toBeVisible();
   await expect(page.getByText("Se reentrena; no aprende en el navegador.")).toBeVisible();
-  await expect(page.getByText("Alfonso Cifuentes · demo inference").first()).toBeVisible();
+  await expect(page.getByText(/· demo inference/).first()).toBeVisible();
   await expect(page.getByText(/No se promueve: pierde en la métrica de selección/).first()).toBeVisible();
   await expect(page.getByText(/4218f184e6/).first()).toBeVisible();
 });

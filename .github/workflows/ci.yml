@@ -27,6 +27,18 @@ jobs:
         env:
           RENEWABLEOPS_ENABLE_MLFLOW: "true"
           MLFLOW_TRACKING_URI: sqlite:///data/mlflow.db
+      - name: Exercise approval gate for ephemeral CI artifacts
+        run: |
+          uv run renewableops approve-model \
+            --technology solar \
+            --model random_forest \
+            --approver "CI governance fixture" \
+            --reason "Ephemeral CI-only decision used to exercise the approval-gated API; never published as a production approval."
+          uv run renewableops approve-model \
+            --technology wind \
+            --model extra_trees \
+            --approver "CI governance fixture" \
+            --reason "Ephemeral CI-only decision used to exercise the approval-gated API; never published as a production approval."
       - run: uv run ruff check .
       - run: uv run mypy packages/core/src apps/api/src
       - run: uv run pytest --junitxml=artifacts/pytest.xml
