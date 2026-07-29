@@ -32,7 +32,7 @@ jobs:
             git commit -m "data: refresh verified public snapshot"
             git push
           fi
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: renewableops-public-snapshot
           retention-days: 30
