@@ -41,3 +41,6 @@ mlruns/
 *.tfstate*
 .DS_Store
 Thumbs.db
+
+.open-next
+.wrangler

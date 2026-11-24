@@ -1,0 +1,11 @@
+// RenewableOps dashboard en Cloudflare Workers (OpenNext).
+// Desplegar: npx opennextjs-cloudflare build && npx wrangler deploy
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "renewableops-ai",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-06-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+  "observability": { "enabled": true }
+}

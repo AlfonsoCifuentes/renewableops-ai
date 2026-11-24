@@ -1,9 +1,10 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import { cache } from "react";
 import { z } from "zod";
 
 import type { DashboardSnapshot } from "@/lib/types";
+// Importado en el bundle (antes fs.readFile): Cloudflare Workers no tiene
+// sistema de archivos. El fichero sigue publicándose en /data/latest/.
+import snapshot from "../public/data/latest/dashboard.json";
 
 const metaSchema = z.object({
   snapshot_version: z.string(),
@@ -36,17 +37,8 @@ const snapshotBoundary = z
   })
   .passthrough();
 
-const snapshotPath = path.join(
-  process.cwd(),
-  "public",
-  "data",
-  "latest",
-  "dashboard.json",
-);
-
 export const getDashboardData = cache(async (): Promise<DashboardSnapshot> => {
-  const raw = await fs.readFile(snapshotPath, "utf8");
-  const parsed: unknown = JSON.parse(raw);
+  const parsed: unknown = snapshot;
   snapshotBoundary.parse(parsed);
   return parsed as DashboardSnapshot;
 });
